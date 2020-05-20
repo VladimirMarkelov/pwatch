@@ -1,0 +1,9 @@
+/target
+**/*.rs.bk
+*.zip
+*.tar
+*.rar
+*.7z
+*.log
+*.gz
+*.tar
