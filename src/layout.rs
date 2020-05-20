@@ -4,13 +4,14 @@ use std::time::SystemTime;
 
 use crate::config::{Config, Pack};
 use crate::counter::{draw_counter, Process};
-use crate::ux::format_duration;
+use crate::ux::{cut_string, format_duration};
 
 // use log::*;
 
-use crossterm::{cursor, /*execute,*/ queue, style, terminal, Result};
+use crossterm::{cursor, queue, style, style::Color, terminal, Result};
 use regex::Regex;
 use sysinfo::{ProcessExt, ProcessorExt, System, SystemExt};
+use unicode_width::UnicodeWidthStr;
 
 pub struct Layout {
     pub w: u16,
@@ -22,6 +23,7 @@ pub struct Layout {
     pub mem_usage: u64,  // total MEM%
     pub top_item: usize, // first shown counter (used only if there are hidden counters)
     pub mark_since: Option<SystemTime>,
+    show_help: bool,
 }
 
 pub const MIN_HEIGHT: u16 = 5;
@@ -49,6 +51,7 @@ impl Layout {
             mem_usage: 0,
             top_item: 0,
             mark_since: None,
+            show_help: false,
         }
     }
 
@@ -234,7 +237,11 @@ impl Layout {
     pub fn draw_counters(&mut self) -> Result<()> {
         let mut stdout = stdout();
         // queue!(stdout, style::ResetColor, terminal::Clear(ClearType::All))?;
-        draw_totals(&mut stdout, self)?;
+        if self.show_help {
+            draw_help(&mut stdout, self)?;
+        } else {
+            draw_totals(&mut stdout, self)?;
+        }
         for (idx, proc) in self.procs.iter_mut().enumerate() {
             if idx < self.top_item {
                 continue;
@@ -317,6 +324,10 @@ impl Layout {
         }
         new_h
     }
+
+    pub(crate) fn switch_help(&mut self) {
+        self.show_help = !self.show_help;
+    }
 }
 
 fn update_proc<P>(procs: &mut Vec<Process>, p: &P)
@@ -359,7 +370,27 @@ where
     procs.push(ap);
 }
 
-pub fn draw_totals<W>(w: &mut W, layout: &Layout) -> Result<()>
+fn draw_help<W>(w: &mut W, layout: &Layout) -> Result<()>
+where
+    W: Write,
+{
+    let help_str = "SPACE: Mark | r: Reset max | F11: Title | F12: Scale";
+    let mut s = cut_string(help_str, layout.w as usize);
+    let width = s.width();
+    if width < layout.w as usize {
+        s += &" ".repeat(layout.w as usize - width);
+    }
+    queue!(
+        w,
+        cursor::MoveTo(0, 0),
+        style::SetForegroundColor(Color::Black),
+        style::SetBackgroundColor(Color::White),
+        style::Print(s),
+        style::ResetColor
+    )
+}
+
+fn draw_totals<W>(w: &mut W, layout: &Layout) -> Result<()>
 where
     W: Write,
 {

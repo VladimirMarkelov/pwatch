@@ -43,6 +43,16 @@ pub(crate) fn fade_str_left(s: &str, width: usize) -> String {
     FILLER.to_string()
 }
 
+// TODO: support wide characters
+pub(crate) fn cut_string(s: &str, max_width: usize) -> String {
+    let curr_width = s.width();
+    if max_width == 0 || curr_width <= max_width {
+        return s.to_string();
+    }
+    let res: String = s.chars().take(max_width).collect();
+    res
+}
+
 // Converts value in KB to string of maximum length of 4 characters.
 // Do its best to display as much info as possible.
 pub(crate) fn format_bytes(val: u64) -> String {
@@ -247,6 +257,17 @@ mod tests {
             assert_eq!(m, ress_m[idx]);
             assert_eq!(v1, ress_v1[idx]);
             assert_eq!(m1, ress_m[idx]);
+        }
+    }
+
+    #[test]
+    fn cut_test() {
+        let orig = "0123456";
+        let vals: [usize; 9] = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+        let ress: [&str; 9] = ["0123456", "0", "01", "012", "0123", "01234", "012345", "0123456", "0123456"];
+        for (idx, v) in vals.iter().enumerate() {
+            let r = cut_string(&orig, *v);
+            assert_eq!(&r, ress[idx]);
         }
     }
 }

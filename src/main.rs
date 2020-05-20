@@ -38,10 +38,6 @@ fn process_events(lay: &mut layout::Layout) -> Result<()> {
                 Event::Key(ev) => {
                     match ev.code {
                         KeyCode::Esc | KeyCode::Char('q') => return Ok(()),
-                        // KeyCode::Down | KeyCode::Up => {
-                        //     lay.scroll(ev.code == KeyCode::Down);
-                        //     force_redraw = true;
-                        // },
                         KeyCode::Down => force_redraw = lay.scroll(1),
                         KeyCode::Up => force_redraw = lay.scroll(-1),
                         KeyCode::Home => force_redraw = lay.scroll(layout::SCROLL_HOME),
@@ -54,6 +50,14 @@ fn process_events(lay: &mut layout::Layout) -> Result<()> {
                         }
                         KeyCode::Char('r') => {
                             lay.reset_max();
+                            force_redraw = true;
+                        }
+                        KeyCode::F(1) => {
+                            lay.switch_help();
+                            force_redraw = true;
+                        }
+                        KeyCode::F(11) => {
+                            // lay.swith_title_type();
                             force_redraw = true;
                         }
                         KeyCode::F(12) => {
