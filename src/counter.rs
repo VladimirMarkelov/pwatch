@@ -11,6 +11,7 @@ use sysinfo::Pid;
 use unicode_width::UnicodeWidthStr;
 
 use crate::config::{Config, Detail};
+use crate::layout::{TitleMode};
 use crate::ux::{fade_str_left, format_bytes, format_diff, format_duration, format_mem, round_to_hundred, short_round};
 
 const LOW: [char; 2] = [' ', '\u{2588}'];
@@ -222,6 +223,8 @@ pub struct Process {
     pub pid: Pid,     // process PID
     pub dead: bool,   // whether process is active
     pub cmd: String,  // process command line
+    pub exe: String,  // process command line
+    pub title: String,  // process command line
     pub x: u16,       // box coordinates to draw all counters
     pub y: u16,
     pub w: u16,
@@ -275,7 +278,7 @@ impl PartialOrd for Process {
 }
 
 impl Process {
-    pub fn new(cmd: String, pid: Pid, sided: bool) -> Process {
+    pub(crate) fn new(pid: Pid, sided: bool, cmd: String, exe: String, title: String) -> Process {
         let mut p = Process {
             cpu: Default::default(),
             mem: Default::default(),
@@ -292,6 +295,8 @@ impl Process {
             sided,
             pid,
             cmd,
+            exe,
+            title,
         };
         p.cpu.scale_to = 100;
         p.mem.auto_scale = true;
@@ -299,7 +304,7 @@ impl Process {
     }
 
     // set new dimensions for a counter. Zero width disables drawing the counter
-    pub fn dim(&mut self, x: u16, y: u16, w: u16, h: u16, sided: bool) {
+    pub(crate) fn dim(&mut self, x: u16, y: u16, w: u16, h: u16, sided: bool) {
         self.x = x;
         self.y = y;
         self.w = w;
@@ -315,7 +320,7 @@ impl Process {
         self.cpu.display_cnt = cp_w as usize;
         self.mem.display_cnt = mm_w as usize;
     }
-    pub fn add(&mut self, cpu: u64, mem: u64) {
+    pub(crate) fn add(&mut self, cpu: u64, mem: u64) {
         if self.cpu.values.is_empty() {
             self.cpu.add(0);
         } else {
@@ -323,12 +328,30 @@ impl Process {
         }
         self.mem.add(mem);
     }
-    pub fn toggle_mark(&mut self) {
+    pub(crate) fn toggle_mark(&mut self) {
         self.mem.toggle_mark();
     }
-    pub fn reset_max(&mut self) {
+    pub(crate) fn reset_max(&mut self) {
         self.cpu.reset_max();
         self.mem.reset_max();
+    }
+
+    fn description(&self, mode: TitleMode) -> String {
+        let mut desc = match mode {
+            TitleMode::Cmd => self.cmd.to_string(),
+            TitleMode::Exe => self.exe.to_string(),
+            TitleMode::Title => self.title.to_string(),
+        };
+        if desc.is_empty() {
+            desc = self.title.to_string();
+        }
+        if desc.is_empty() {
+            desc = self.exe.to_string();
+        }
+        if desc.is_empty() {
+            desc = self.cmd.to_string();
+        }
+        desc
     }
 }
 
@@ -482,7 +505,7 @@ where
     Ok(())
 }
 
-fn draw_title<W>(w: &mut W, proc: &Process, cnt: usize) -> Result<()>
+fn draw_title<W>(w: &mut W, proc: &Process, cnt: usize, mode: TitleMode) -> Result<()>
 where
     W: Write,
 {
@@ -490,7 +513,8 @@ where
     // TODO: PID in read for dead processes ?
     let pid = format!("[{}]-[{}] ", cnt, proc.pid);
     let maxw = proc.w as usize - pid.len();
-    let cmd = fade_str_left(&proc.cmd, maxw);
+    let cmd = fade_str_left(&proc.description(mode), maxw);
+    // let cmd = fade_str_left(&proc.cmd, maxw);
     let spare = maxw - cmd.width();
     let title = if spare == 0 {
         format!("{}{}", pid, cmd)
@@ -533,7 +557,7 @@ where
 // }
 
 // U+2502 - vertical line
-pub fn draw_counter<W>(w: &mut W, proc: &mut Process, cnt: usize, conf: &Config) -> Result<()>
+pub(crate) fn draw_counter<W>(w: &mut W, proc: &mut Process, cnt: usize, mode: TitleMode, conf: &Config) -> Result<()>
 where
     W: Write,
 {
@@ -542,7 +566,7 @@ where
         return Ok(());
     }
 
-    draw_title(w, &proc, cnt)?;
+    draw_title(w, &proc, cnt, mode)?;
     // draw_footer(w, 0, proc.y, proc.w)?; // TODO
 
     let (cpu_w, mem_w) = if proc.sided {
