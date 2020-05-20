@@ -10,6 +10,7 @@ use std::time::{Duration, Instant};
 
 // use log::*;
 use simplelog::*;
+use atty::Stream;
 
 use crossterm::event::{poll, read /*, DisableMouseCapture, EnableMouseCapture*/, Event, KeyCode};
 use crossterm::terminal::{self, disable_raw_mode, enable_raw_mode, ClearType};
@@ -109,15 +110,6 @@ fn process_events(lay: &mut layout::Layout) -> Result<()> {
             stdout.flush()?;
         }
 
-        // let mut stdout = stdout();
-        // layout::draw_totals(&mut stdout, &lay)?;
-        // for (idx, proc) in lay.procs.iter_mut().enumerate() {
-        //     if proc.w == 0 {
-        //         break;
-        //     }
-        //     counter::draw_counter(&mut stdout, proc, idx+1, &lay.config)?;
-        // }
-        // stdout.flush()?;
         lay.draw_counters()?;
         if must_update {
             tm = Instant::now();
@@ -126,6 +118,10 @@ fn process_events(lay: &mut layout::Layout) -> Result<()> {
 }
 
 fn main() -> Result<()> {
+    if !atty::is(Stream::Stdout) {
+        eprintln!("Only TTY is supported");
+        exit(2);
+    }
     let cb = ConfigBuilder::new().set_time_format("[%Y-%m-%d %H:%M:%S%.3f]".to_string()).build();
     CombinedLogger::init(vec![WriteLogger::new(LevelFilter::Info, cb, File::create("app.log").unwrap())]).unwrap();
     println!();
