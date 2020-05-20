@@ -35,38 +35,36 @@ fn process_events(lay: &mut layout::Layout) -> Result<()> {
         let page = (tot - hid) as i32;
         if poll(Duration::from_millis(lay.config.freq))? {
             match read()? {
-                Event::Key(ev) => {
-                    match ev.code {
-                        KeyCode::Esc | KeyCode::Char('q') => return Ok(()),
-                        KeyCode::Down => force_redraw = lay.scroll(1),
-                        KeyCode::Up => force_redraw = lay.scroll(-1),
-                        KeyCode::Home => force_redraw = lay.scroll(layout::SCROLL_HOME),
-                        KeyCode::End => force_redraw = lay.scroll(layout::SCROLL_END),
-                        KeyCode::PageDown => force_redraw = lay.scroll(page),
-                        KeyCode::PageUp => force_redraw = lay.scroll(-page),
-                        KeyCode::Char(' ') => {
-                            lay.toggle_mark();
-                            force_redraw = true;
-                        }
-                        KeyCode::Char('r') => {
-                            lay.reset_max();
-                            force_redraw = true;
-                        }
-                        KeyCode::F(1) => {
-                            lay.switch_help();
-                            force_redraw = true;
-                        }
-                        KeyCode::F(9) => {
-                            lay.switch_title_type();
-                            force_redraw = true;
-                        }
-                        KeyCode::F(12) => {
-                            lay.config.scale_max = !lay.config.scale_max;
-                            force_redraw = true;
-                        }
-                        _ => {}
+                Event::Key(ev) => match ev.code {
+                    KeyCode::Esc | KeyCode::Char('q') => return Ok(()),
+                    KeyCode::Down => force_redraw = lay.scroll(1),
+                    KeyCode::Up => force_redraw = lay.scroll(-1),
+                    KeyCode::Home => force_redraw = lay.scroll(layout::SCROLL_HOME),
+                    KeyCode::End => force_redraw = lay.scroll(layout::SCROLL_END),
+                    KeyCode::PageDown => force_redraw = lay.scroll(page),
+                    KeyCode::PageUp => force_redraw = lay.scroll(-page),
+                    KeyCode::Char(' ') => {
+                        lay.toggle_mark();
+                        force_redraw = true;
                     }
-                }
+                    KeyCode::Char('r') => {
+                        lay.reset_max();
+                        force_redraw = true;
+                    }
+                    KeyCode::F(1) => {
+                        lay.switch_help();
+                        force_redraw = true;
+                    }
+                    KeyCode::F(9) => {
+                        lay.switch_title_type();
+                        force_redraw = true;
+                    }
+                    KeyCode::F(12) => {
+                        lay.config.scale_max = !lay.config.scale_max;
+                        force_redraw = true;
+                    }
+                    _ => {}
+                },
                 Event::Resize(width, height) => {
                     if width < 30 || height < 10 {
                         eprintln!("Requires terminal width at least 30 and height at least 10 characters");

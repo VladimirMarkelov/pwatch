@@ -13,7 +13,7 @@ use regex::Regex;
 use sysinfo::{ProcessExt, ProcessorExt, System, SystemExt};
 use unicode_width::UnicodeWidthStr;
 
-#[derive(Copy,Clone)]
+#[derive(Copy, Clone)]
 pub(crate) enum TitleMode {
     Cmd,
     Exe,

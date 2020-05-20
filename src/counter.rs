@@ -11,7 +11,7 @@ use sysinfo::Pid;
 use unicode_width::UnicodeWidthStr;
 
 use crate::config::{Config, Detail};
-use crate::layout::{TitleMode};
+use crate::layout::TitleMode;
 use crate::ux::{fade_str_left, format_bytes, format_diff, format_duration, format_mem, round_to_hundred, short_round};
 
 const LOW: [char; 2] = [' ', '\u{2588}'];
@@ -218,14 +218,14 @@ impl Counter {
 }
 
 pub struct Process {
-    pub cpu: Counter, // CPU history
-    pub mem: Counter, // MEM history
-    pub pid: Pid,     // process PID
-    pub dead: bool,   // whether process is active
-    pub cmd: String,  // process command line
-    pub exe: String,  // process command line
-    pub title: String,  // process command line
-    pub x: u16,       // box coordinates to draw all counters
+    pub cpu: Counter,  // CPU history
+    pub mem: Counter,  // MEM history
+    pub pid: Pid,      // process PID
+    pub dead: bool,    // whether process is active
+    pub cmd: String,   // process command line
+    pub exe: String,   // process command line
+    pub title: String, // process command line
+    pub x: u16,        // box coordinates to draw all counters
     pub y: u16,
     pub w: u16,
     pub h: u16,
