@@ -13,6 +13,13 @@ use regex::Regex;
 use sysinfo::{ProcessExt, ProcessorExt, System, SystemExt};
 use unicode_width::UnicodeWidthStr;
 
+#[derive(Copy,Clone)]
+pub(crate) enum TitleMode {
+    Cmd,
+    Exe,
+    Title,
+}
+
 pub struct Layout {
     pub w: u16,
     pub h: u16,
@@ -24,6 +31,7 @@ pub struct Layout {
     pub top_item: usize, // first shown counter (used only if there are hidden counters)
     pub mark_since: Option<SystemTime>,
     show_help: bool,
+    title_mode: TitleMode,
 }
 
 pub const MIN_HEIGHT: u16 = 5;
@@ -52,6 +60,7 @@ impl Layout {
             top_item: 0,
             mark_since: None,
             show_help: false,
+            title_mode: TitleMode::Cmd,
         }
     }
 
@@ -249,7 +258,7 @@ impl Layout {
             if proc.w == 0 {
                 break;
             }
-            draw_counter(&mut stdout, proc, idx + 1, &self.config)?;
+            draw_counter(&mut stdout, proc, idx + 1, self.title_mode, &self.config)?;
         }
         stdout.flush()?;
         Ok(())
@@ -328,6 +337,15 @@ impl Layout {
     pub(crate) fn switch_help(&mut self) {
         self.show_help = !self.show_help;
     }
+
+    pub(crate) fn switch_title_type(&mut self) {
+        let old = self.title_mode;
+        self.title_mode = match old {
+            TitleMode::Cmd => TitleMode::Exe,
+            TitleMode::Exe => TitleMode::Title,
+            TitleMode::Title => TitleMode::Cmd,
+        };
+    }
 }
 
 fn update_proc<P>(procs: &mut Vec<Process>, p: &P)
@@ -350,18 +368,17 @@ where
         }
     }
 
-    let mut title = String::new();
+    let mut cmd = String::new();
     for s in p.cmd().iter() {
-        if !title.is_empty() {
-            title += " ";
+        if !cmd.is_empty() {
+            cmd += " ";
         }
-        title += s;
+        cmd += s;
     }
-    // let mut title = p.exe().to_string_lossy().to_string();
-    if title.is_empty() {
-        title = p.name().to_string();
-    };
-    let mut ap = Process::new(title, p.pid(), false);
+    let exe = p.exe().to_string_lossy().to_string();
+    let title = p.name().to_string();
+
+    let mut ap = Process::new(p.pid(), false, cmd, exe, title);
     let prc: u64 = p.cpu_usage().round() as u64;
     ap.add(prc, p.memory());
     let du = p.disk_usage();
@@ -374,7 +391,7 @@ fn draw_help<W>(w: &mut W, layout: &Layout) -> Result<()>
 where
     W: Write,
 {
-    let help_str = "SPACE: Mark | r: Reset max | F11: Title | F12: Scale";
+    let help_str = "SPACE: Mark | r: Reset max | F9: Title | F12: Scale";
     let mut s = cut_string(help_str, layout.w as usize);
     let width = s.width();
     if width < layout.w as usize {

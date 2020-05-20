@@ -56,8 +56,8 @@ fn process_events(lay: &mut layout::Layout) -> Result<()> {
                             lay.switch_help();
                             force_redraw = true;
                         }
-                        KeyCode::F(11) => {
-                            // lay.swith_title_type();
+                        KeyCode::F(9) => {
+                            lay.switch_title_type();
                             force_redraw = true;
                         }
                         KeyCode::F(12) => {
