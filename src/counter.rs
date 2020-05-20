@@ -211,7 +211,7 @@ impl Counter {
     fn reset_max(&mut self) {
         self.max = self.max_last_n(self.w as usize);
         if self.scale_to != 0 {
-            self.scale_to = round_to_hundred(self.max);
+            self.scale_to = if self.max == 0 { 100 } else { round_to_hundred(self.max) };
         }
     }
 }
