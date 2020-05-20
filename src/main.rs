@@ -9,8 +9,8 @@ use std::process::exit;
 use std::time::{Duration, Instant};
 
 // use log::*;
-use simplelog::*;
 use atty::Stream;
+use simplelog::*;
 
 use crossterm::event::{poll, read /*, DisableMouseCapture, EnableMouseCapture*/, Event, KeyCode};
 use crossterm::terminal::{self, disable_raw_mode, enable_raw_mode, ClearType};
