@@ -28,7 +28,7 @@ pub(crate) struct Layout {
     pub(crate) mem_usage: u64,  // total MEM%
     pub(crate) top_item: usize, // first shown counter (used only if there are hidden counters)
     pub(crate) mark_since: Option<SystemTime>,
-    show_help: bool, // show help bar(true) or total CPU/MEM(false) in the top line
+    show_help: bool,       // show help bar(true) or total CPU/MEM(false) in the top line
     title_mode: TitleMode, // what use for a process title when displaying it
 }
 
@@ -252,12 +252,12 @@ impl Layout {
                 let res = self.top_item != 0;
                 self.top_item = 0;
                 res
-            },
+            }
             Scroll::End => {
                 let res = self.top_item < t - shown;
                 self.top_item = t - shown;
                 res
-            },
+            }
             Scroll::Up(shift) => {
                 if self.top_item == 0 {
                     return false;
@@ -268,7 +268,7 @@ impl Layout {
                     self.top_item -= shift;
                 }
                 true
-            },
+            }
             Scroll::Down(shift) => {
                 if self.top_item + shown >= t {
                     return false;

@@ -15,21 +15,21 @@ pub(crate) enum Pack {
 // Graph details: a user can choose lower details if terminal font does not include all required characters
 #[derive(Clone)]
 pub(crate) enum Detail {
-    Low, // Only full and empty blocks are used
+    Low,    // Only full and empty blocks are used
     Medium, // Full, half-full, and empty blocks are used
-    High, // Nine blocks from empty one to full one with 1/8 step
+    High,   // Nine blocks from empty one to full one with 1/8 step
 }
 
 #[derive(Clone)]
 pub(crate) struct Config {
-    pub(crate) pack: Pack,  // How to show CPU and MEM of the same process
-    pub(crate) no_cpu: bool, // do not show CPU (unused yet)
-    pub(crate) no_mem: bool, // do not show MEM (unused yet)
+    pub(crate) pack: Pack,         // How to show CPU and MEM of the same process
+    pub(crate) no_cpu: bool,       // do not show CPU (unused yet)
+    pub(crate) no_mem: bool,       // do not show MEM (unused yet)
     pub(crate) pid_list: Vec<Pid>, // list of process PIDs provided by a user in command-line
-    pub(crate) filter: String, // regular expression to filter process by their name/path to binary
-    pub(crate) detail: Detail, // Graph details (set of characters used to display graphs)
+    pub(crate) filter: String,     // regular expression to filter process by their name/path to binary
+    pub(crate) detail: Detail,     // Graph details (set of characters used to display graphs)
     pub(crate) scale_max: bool, // How to scale MEM graph: true - from 0 ro all-time max, false - from displayed min to max
-    pub(crate) freq: u64, // process stats refresh rate in range 0.25s .. 10s
+    pub(crate) freq: u64,       // process stats refresh rate in range 0.25s .. 10s
 }
 
 impl Default for Config {

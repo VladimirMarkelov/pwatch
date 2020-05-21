@@ -43,7 +43,7 @@ pub(crate) struct Counter {
     pub(crate) scale_to: u64,           // scale to this value if auto_scale == false
     pub(crate) auto_scale: bool,        // scale to max in range or to max_val
     pub(crate) mark_value: Option<u64>, // value when a user pressed a key to mark the position
-    w: u16,                      // width and height of graph area
+    w: u16,                             // width and height of graph area
     h: u16,
     pub(crate) screen: Vec<char>, // precalculated graph: WxH
     pub(crate) gmin: u64,         // range of the graphic
