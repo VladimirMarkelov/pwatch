@@ -6,6 +6,7 @@ use std::time::Duration;
 use unicode_width::UnicodeWidthChar;
 use unicode_width::UnicodeWidthStr;
 
+// A character used to indicate that a string was truncated
 const FILLER: char = '…';
 
 /// Truncates a string to be at most `width` in terms of display width.
@@ -43,6 +44,7 @@ pub(crate) fn fade_str_left(s: &str, width: usize) -> String {
     FILLER.to_string()
 }
 
+// Make a string not longer than max_width screen cells
 // TODO: support wide characters
 pub(crate) fn cut_string(s: &str, max_width: usize) -> String {
     let curr_width = s.width();
@@ -53,7 +55,7 @@ pub(crate) fn cut_string(s: &str, max_width: usize) -> String {
     res
 }
 
-// Converts value in KB to string of maximum length of 4 characters.
+// Converts value in KB to string of maximum length of 4 characters including suffix.
 // Do its best to display as much info as possible.
 pub(crate) fn format_bytes(val: u64) -> String {
     if val < 1000 {
@@ -78,6 +80,7 @@ pub(crate) fn format_bytes(val: u64) -> String {
     "!!!!!".to_string()
 }
 
+// Round up a number to nearest number divisible by 100.
 pub(crate) fn round_to_hundred(v: u64) -> u64 {
     if v % 100 == 0 {
         return v;
@@ -86,6 +89,9 @@ pub(crate) fn round_to_hundred(v: u64) -> u64 {
     h * 100
 }
 
+// Formats a duration to show at max two biggest duration entities:
+// 3 minutes 47 seconds => "3m47s"
+// 1 day 3 hours 40 minutes 17 seconds => "1d3h"
 pub(crate) fn format_duration(d: Duration) -> String {
     let sec = d.as_secs();
     if sec < 60 {
@@ -118,7 +124,7 @@ pub(crate) fn format_duration(d: Duration) -> String {
     }
 }
 
-// Converts difference in KB to string..
+// Converts difference in KB to string.
 pub(crate) fn format_diff(val: i64) -> String {
     let sgn = if val < 0 { '-' } else { '+' };
     let val = if val < 0 { -val } else { val };
@@ -141,6 +147,8 @@ pub(crate) fn format_diff(val: i64) -> String {
     format!("{}!!!!", sgn)
 }
 
+// Divides a number by 1024 until it is in 0..1024 range with rounding up or down.
+// Returns the resulting value and multiplier.
 pub(crate) fn short_round(val: u64, down: bool) -> (u64, u64) {
     if val < 1024 {
         return (val, 1);

@@ -20,7 +20,7 @@ fn process_events(lay: &mut layout::Layout) -> Result<()> {
     let mut force_redraw = false;
     let mut resized = false;
 
-    // draw immediately
+    // draw immediately empty graphs
     lay.update();
     lay.place();
     lay.draw_counters()?;
@@ -28,17 +28,17 @@ fn process_events(lay: &mut layout::Layout) -> Result<()> {
 
     loop {
         let (tot, hid, _dead) = lay.proc_totals();
-        let page = (tot - hid) as i32;
+        let page = tot - hid;
         if poll(Duration::from_millis(lay.config.freq))? {
             match read()? {
                 Event::Key(ev) => match ev.code {
                     KeyCode::Esc | KeyCode::Char('q') => return Ok(()),
-                    KeyCode::Down => force_redraw = lay.scroll(1),
-                    KeyCode::Up => force_redraw = lay.scroll(-1),
-                    KeyCode::Home => force_redraw = lay.scroll(layout::SCROLL_HOME),
-                    KeyCode::End => force_redraw = lay.scroll(layout::SCROLL_END),
-                    KeyCode::PageDown => force_redraw = lay.scroll(page),
-                    KeyCode::PageUp => force_redraw = lay.scroll(-page),
+                    KeyCode::Down => force_redraw = lay.scroll(layout::Scroll::Down(1)),
+                    KeyCode::Up => force_redraw = lay.scroll(layout::Scroll::Up(1)),
+                    KeyCode::Home => force_redraw = lay.scroll(layout::Scroll::Home),
+                    KeyCode::End => force_redraw = lay.scroll(layout::Scroll::End),
+                    KeyCode::PageDown => force_redraw = lay.scroll(layout::Scroll::Down(page)),
+                    KeyCode::PageUp => force_redraw = lay.scroll(layout::Scroll::Up(page)),
                     KeyCode::Char(' ') => {
                         lay.toggle_mark();
                         force_redraw = true;

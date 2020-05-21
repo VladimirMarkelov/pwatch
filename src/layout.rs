@@ -18,26 +18,31 @@ pub(crate) enum TitleMode {
     Title,
 }
 
-pub struct Layout {
-    pub w: u16,
-    pub h: u16,
-    pub procs: Vec<Process>,
-    pub config: Config,
-    pub system: System,
-    pub cpu_usage: u64,  // total CPU%
-    pub mem_usage: u64,  // total MEM%
-    pub top_item: usize, // first shown counter (used only if there are hidden counters)
-    pub mark_since: Option<SystemTime>,
-    show_help: bool,
-    title_mode: TitleMode,
+pub(crate) struct Layout {
+    pub(crate) w: u16,
+    pub(crate) h: u16,
+    pub(crate) procs: Vec<Process>, // list of monitored processes
+    pub(crate) config: Config,
+    pub(crate) system: System,
+    pub(crate) cpu_usage: u64,  // total CPU%
+    pub(crate) mem_usage: u64,  // total MEM%
+    pub(crate) top_item: usize, // first shown counter (used only if there are hidden counters)
+    pub(crate) mark_since: Option<SystemTime>,
+    show_help: bool, // show help bar(true) or total CPU/MEM(false) in the top line
+    title_mode: TitleMode, // what use for a process title when displaying it
 }
 
-pub const MIN_HEIGHT: u16 = 5;
-pub const SCROLL_HOME: i32 = -9_999_999;
-pub const SCROLL_END: i32 = 9_999_999;
+pub(crate) const MIN_HEIGHT: u16 = 5; // minimum height of a graph
+
+pub(crate) enum Scroll {
+    Home,
+    End,
+    Up(usize),
+    Down(usize),
+}
 
 impl Layout {
-    pub fn new(config: Config) -> Layout {
+    pub(crate) fn new(config: Config) -> Layout {
         let (w, h) = if let Ok((cols, rows)) = terminal::size() {
             if cols < 30 || rows < 10 {
                 eprintln!("Requires terminal width at least 30 and height at least 10 characters");
@@ -62,7 +67,8 @@ impl Layout {
         }
     }
 
-    pub fn size_changed(&mut self, w: u16, h: u16) {
+    // Terminal resize event handler
+    pub(crate) fn size_changed(&mut self, w: u16, h: u16) {
         if self.w == w && self.h == h {
             return;
         }
@@ -105,6 +111,7 @@ impl Layout {
         (cnt, hgt, tp)
     }
 
+    // Refresh process list, update CPU/MEM, mark dead ones, and add new ones
     fn update_procs(&mut self) {
         let procs = self.system.get_processes();
         for ap in self.procs.iter_mut() {
@@ -157,6 +164,7 @@ impl Layout {
         self.procs.sort();
     }
 
+    // Calculate total used CPU and MEM.
     fn update_total(&mut self) {
         let mut total = 0.0f32;
         let mut used = 0.0f32;
@@ -169,7 +177,7 @@ impl Layout {
         self.mem_usage = self.system.get_used_memory() * 100 / self.system.get_total_memory();
     }
 
-    pub fn update(&mut self) {
+    pub(crate) fn update(&mut self) {
         self.system.refresh_processes();
         self.system.refresh_cpu();
         self.system.refresh_memory();
@@ -178,7 +186,8 @@ impl Layout {
         self.update_total();
     }
 
-    pub fn place(&mut self) {
+    // Recalculate position of all graphs. Mark ones that are out of screen.
+    pub(crate) fn place(&mut self) {
         if self.procs.is_empty() {
             return;
         }
@@ -186,14 +195,14 @@ impl Layout {
         let (mx, h, pack) = self.max_shown();
         for idx in 0..l {
             if idx < self.top_item || idx >= self.top_item + mx {
-                self.procs[idx].dim(0, 0, 0, 0, false);
+                self.procs[idx].dim(0, 0, 0, 0, false); // out of screen
             } else {
                 self.procs[idx].dim(0, (idx - self.top_item) as u16 * h + 1, self.w, h, pack == Pack::Side);
             }
         }
     }
 
-    // Returns total number of watched processes, hidden, and dead
+    // Returns total number of watched processes, hidden and dead ones
     pub(crate) fn proc_totals(&self) -> (usize, usize, usize) {
         let total = self.procs.len();
         if total == 0 {
@@ -212,7 +221,7 @@ impl Layout {
         (total, hidden, dead)
     }
 
-    pub fn draw_counters(&mut self) -> Result<()> {
+    pub(crate) fn draw_counters(&mut self) -> Result<()> {
         let mut stdout = stdout();
         if self.show_help {
             draw_help(&mut stdout, self)?;
@@ -232,47 +241,49 @@ impl Layout {
         Ok(())
     }
 
-    pub fn scroll(&mut self, shift: i32) -> bool {
+    pub(crate) fn scroll(&mut self, dir: Scroll) -> bool {
         let (t, h, _d) = self.proc_totals();
         if h == 0 {
             return false;
         }
         let shown = t - h;
-        if shift == SCROLL_HOME {
-            let res = self.top_item != 0;
-            self.top_item = 0;
-            return res;
-        } else if shift == SCROLL_END {
-            let res = self.top_item < t - shown;
-            self.top_item = t - shown;
-            return res;
-        } else if shift < 0 {
-            if self.top_item == 0 {
-                return false;
-            }
-            let ushift = (-shift) as usize;
-            if ushift >= self.top_item {
+        match dir {
+            Scroll::Home => {
+                let res = self.top_item != 0;
                 self.top_item = 0;
-            } else {
-                self.top_item -= ushift;
-            }
-            return true;
-        } else if shift > 0 {
-            let ushift = shift as usize;
-            if self.top_item + shown >= t {
-                return false;
-            }
-            if self.top_item + shown + ushift > t {
+                res
+            },
+            Scroll::End => {
+                let res = self.top_item < t - shown;
                 self.top_item = t - shown;
-                return true;
+                res
+            },
+            Scroll::Up(shift) => {
+                if self.top_item == 0 {
+                    return false;
+                }
+                if shift >= self.top_item {
+                    self.top_item = 0;
+                } else {
+                    self.top_item -= shift;
+                }
+                true
+            },
+            Scroll::Down(shift) => {
+                if self.top_item + shown >= t {
+                    return false;
+                }
+                if self.top_item + shown + shift > t {
+                    self.top_item = t - shown;
+                    return true;
+                }
+                self.top_item += shift;
+                true
             }
-            self.top_item += ushift;
-            return true;
         }
-        false
     }
 
-    pub fn toggle_mark(&mut self) {
+    pub(crate) fn toggle_mark(&mut self) {
         let is_off = self.mark_since.is_none();
         if is_off {
             self.mark_since = Some(SystemTime::now());
@@ -284,13 +295,13 @@ impl Layout {
         }
     }
 
-    pub fn reset_max(&mut self) {
+    pub(crate) fn reset_max(&mut self) {
         for p in self.procs.iter_mut() {
             p.reset_max();
         }
     }
 
-    pub fn counter_height(&self) -> u16 {
+    pub(crate) fn counter_height(&self) -> u16 {
         let mut new_h = 0u16;
         for p in self.procs.iter() {
             if p.h != 0 {

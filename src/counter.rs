@@ -13,6 +13,7 @@ use crate::config::{Config, Detail};
 use crate::layout::TitleMode;
 use crate::ux::{fade_str_left, format_bytes, format_diff, format_duration, format_mem, round_to_hundred, short_round};
 
+// set of charcters for different graph detalizations
 const LOW: [char; 2] = [' ', '\u{2588}'];
 const MED: [char; 3] = [' ', '\u{2584}', '\u{2588}'];
 const HGH: [char; 9] =
@@ -34,18 +35,19 @@ struct DrawVal {
     max: u64,
 }
 
-pub struct Counter {
-    pub values: Vec<u64>,        // last values
-    pub display_cnt: usize,      // number or last items to show
-    pub max: u64,                // all time max
-    pub scale_to: u64,           // scale to this value if auto_scale == false
-    pub auto_scale: bool,        // scale to max in range or to max_val
-    pub mark_value: Option<u64>, // value when a user pressed a key to mark the position
+// A single counter to manage stream of data
+pub(crate) struct Counter {
+    pub(crate) values: Vec<u64>,        // last values
+    pub(crate) display_cnt: usize,      // number or last items to show
+    pub(crate) max: u64,                // all time max
+    pub(crate) scale_to: u64,           // scale to this value if auto_scale == false
+    pub(crate) auto_scale: bool,        // scale to max in range or to max_val
+    pub(crate) mark_value: Option<u64>, // value when a user pressed a key to mark the position
     w: u16,                      // width and height of graph area
     h: u16,
-    pub screen: Vec<char>, // precalculated graph: WxH
-    pub gmin: u64,         // range of the graphic
-    pub gmax: u64,
+    pub(crate) screen: Vec<char>, // precalculated graph: WxH
+    pub(crate) gmin: u64,         // range of the graphic
+    pub(crate) gmax: u64,
 }
 
 impl Default for Counter {
@@ -67,7 +69,9 @@ impl Default for Counter {
 }
 
 impl Counter {
-    pub fn add(&mut self, val: u64) {
+    // Add a new measurement for the value. Automatically updates the running maximum and cleans up
+    // values that goes out of sight.
+    pub(crate) fn add(&mut self, val: u64) {
         if val > self.max {
             self.max = val;
         }
@@ -85,14 +89,16 @@ impl Counter {
         self.values[l - 1] = val;
     }
 
-    pub fn last(&self) -> u64 {
+    // Returns the current value
+    pub(crate) fn last(&self) -> u64 {
         if self.values.is_empty() {
             return 0;
         }
         self.values[self.values.len() - 1]
     }
 
-    pub fn last_diff(&self) -> i64 {
+    // Returns the change since the previous measurement
+    pub(crate) fn last_diff(&self) -> i64 {
         let l = self.values.len();
         if l < 2 {
             return 0;
@@ -102,7 +108,8 @@ impl Counter {
         last as i64 - prev as i64
     }
 
-    pub fn max_last_n(&self, n: usize) -> u64 {
+    // Returns the maximum value from last N measurements
+    pub(crate) fn max_last_n(&self, n: usize) -> u64 {
         let mut max = 0u64;
         let vs: &[u64] = if n >= self.values.len() {
             &self.values
@@ -116,7 +123,9 @@ impl Counter {
         max
     }
 
-    pub fn update(&mut self, neww: u16, newh: u16, conf: &Config) {
+    // Updates internal "screen" for faster output to terminal. The function "draws" graph of a
+    // given dimensions in memory array.
+    pub(crate) fn update(&mut self, neww: u16, newh: u16, conf: &Config) {
         if self.w != neww || self.h != newh {
             self.screen = vec![' '; neww as usize * (newh + 1) as usize];
         } else {
@@ -176,6 +185,10 @@ impl Counter {
         }
     }
 
+    // Calculates minimum and maximum values within visible graph range and then rounds the values,
+    // so the displayed min and max in the picture are exact values. Min is always rounded down,
+    // and max is always rounded up. For better looking graphs, if rounded min and max are the
+    // same, the max is increased by one.
     pub(crate) fn calculate_range(&mut self) {
         if !self.auto_scale || self.values.is_empty() {
             return;
@@ -199,6 +212,8 @@ impl Counter {
         self.gmax = max_rnd * max_coef;
     }
 
+    // Set the mark in time from which the the graph shows the difference. If mark is unset, the
+    // difference is calculated since the previous measurement.
     fn toggle_mark(&mut self) {
         let is_off = self.mark_value.is_none();
         if is_off {
@@ -208,6 +223,8 @@ impl Counter {
         }
     }
 
+    // Resets all-time max. Maybe useful if the value had one huge peak and then all the graph is
+    // displayed as thin line at the bottom. Reset assigns the maximum from visible region to all-time max.
     fn reset_max(&mut self) {
         self.max = self.max_last_n(self.w as usize);
         if self.scale_to != 0 {
@@ -216,24 +233,24 @@ impl Counter {
     }
 }
 
-pub struct Process {
-    pub cpu: Counter,  // CPU history
-    pub mem: Counter,  // MEM history
-    pub pid: Pid,      // process PID
-    pub dead: bool,    // whether process is active
-    pub cmd: String,   // process command line
-    pub exe: String,   // process command line
-    pub title: String, // process command line
-    pub x: u16,        // box coordinates to draw all counters
-    pub y: u16,
-    pub w: u16,
-    pub h: u16,
-    pub sided: bool,     // true: CPU and MEM in one line, false: CPU on top of MEM
-    pub io_w_total: u64, // total IO write since start
-    pub io_r_total: u64, // total IO read since start
-    pub io_w_delta: u64, // IO write since last check
-    pub io_r_delta: u64, // IO read since last check
-    pub dead_since: Option<SystemTime>,
+pub(crate) struct Process {
+    pub(crate) cpu: Counter,  // CPU history
+    pub(crate) mem: Counter,  // MEM history
+    pub(crate) pid: Pid,      // process PID
+    pub(crate) dead: bool,    // whether process is active
+    pub(crate) cmd: String,   // process command line
+    pub(crate) exe: String,   // process command line
+    pub(crate) title: String, // process command line
+    pub(crate) x: u16,        // box coordinates to draw all counters
+    pub(crate) y: u16,
+    pub(crate) w: u16,
+    pub(crate) h: u16,
+    pub(crate) sided: bool,     // true: CPU and MEM in one line, false: CPU on top of MEM
+    pub(crate) io_w_total: u64, // total IO write since start
+    pub(crate) io_r_total: u64, // total IO read since start
+    pub(crate) io_w_delta: u64, // IO write since last check
+    pub(crate) io_r_delta: u64, // IO read since last check
+    pub(crate) dead_since: Option<SystemTime>, // Time when the process has exited (or been interrupted)
 }
 
 impl PartialEq for Process {
@@ -335,6 +352,8 @@ impl Process {
         self.mem.reset_max();
     }
 
+    // Returns title for the process. A user defines the default displayed field, but the function
+    // may select another field if the selected one is empty.
     fn description(&self, mode: TitleMode) -> String {
         let mut desc = match mode {
             TitleMode::Cmd => self.cmd.to_string(),
@@ -354,6 +373,10 @@ impl Process {
     }
 }
 
+// Returns the character to print for a value:
+// >=1.0 - the entire block is filled
+// 0.0..1.0 - means the area that should be filled rounded up.
+// The character depends on selected graph quality.
 fn char_for_value(val: f64, conf: &Config) -> char {
     if val >= 1.0f64 {
         return '\u{2588}';

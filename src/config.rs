@@ -4,30 +4,32 @@ use std::process::exit;
 use getopts::{Matches, Options};
 use sysinfo::Pid;
 
+// How CPU and memory graphs of the same process are displayed
 #[derive(Clone, PartialEq)]
-pub enum Pack {
-    Auto,
-    Line,
-    Side,
+pub(crate) enum Pack {
+    Auto, // depends on the number of processes
+    Line, // CPU and MEM graphs occupy the whole terminal width
+    Side, // CPU goes first and takes half of the screen, MEM follows it and takes the rest
+}
+
+// Graph details: a user can choose lower details if terminal font does not include all required characters
+#[derive(Clone)]
+pub(crate) enum Detail {
+    Low, // Only full and empty blocks are used
+    Medium, // Full, half-full, and empty blocks are used
+    High, // Nine blocks from empty one to full one with 1/8 step
 }
 
 #[derive(Clone)]
-pub enum Detail {
-    Low,
-    Medium,
-    High,
-}
-
-#[derive(Clone)]
-pub struct Config {
-    pub pack: Pack,
-    pub no_cpu: bool,
-    pub no_mem: bool,
-    pub pid_list: Vec<Pid>,
-    pub filter: String,
-    pub detail: Detail,
-    pub scale_max: bool,
-    pub freq: u64,
+pub(crate) struct Config {
+    pub(crate) pack: Pack,  // How to show CPU and MEM of the same process
+    pub(crate) no_cpu: bool, // do not show CPU (unused yet)
+    pub(crate) no_mem: bool, // do not show MEM (unused yet)
+    pub(crate) pid_list: Vec<Pid>, // list of process PIDs provided by a user in command-line
+    pub(crate) filter: String, // regular expression to filter process by their name/path to binary
+    pub(crate) detail: Detail, // Graph details (set of characters used to display graphs)
+    pub(crate) scale_max: bool, // How to scale MEM graph: true - from 0 ro all-time max, false - from displayed min to max
+    pub(crate) freq: u64, // process stats refresh rate in range 0.25s .. 10s
 }
 
 impl Default for Config {
@@ -46,6 +48,7 @@ impl Default for Config {
 }
 
 impl Config {
+    // Returns the number of used non-empty characters for graphs
     pub(crate) fn steps(&self) -> u16 {
         match self.detail {
             Detail::Low => 1,
@@ -60,7 +63,7 @@ fn print_usage(program: &str, opts: &Options) {
     print!("{}", opts.usage(&brief));
 }
 
-pub fn parse_args() -> Config {
+pub(crate) fn parse_args() -> Config {
     let args: Vec<String> = env::args().collect();
     let program = args[0].clone();
     let mut conf = Config::default();
