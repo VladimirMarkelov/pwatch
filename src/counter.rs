@@ -610,7 +610,6 @@ where
     proc.cpu.update(cpu_w - 5, hc - 3, conf);
     proc.mem.update(mem_w - 6, hm - yshift - 1, conf);
 
-    // TODO: do not subtract xshift here, pass XSTART & XSHIFT to draw_spikes
     let cpu_rect = DrawRect { x: 5, y: proc.y + 2, w: cpu_w - 5, h: hc - 3 };
     draw_spikes(w, &proc.cpu, cpu_rect, 5, proc.dead_since)?;
     let mem_rect = DrawRect { x: dx + 6, y: proc.y + dym + yshift, w: mem_w - 6, h: hm - yshift - 1 };
