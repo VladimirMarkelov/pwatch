@@ -6,7 +6,6 @@ use std::time::{Duration, SystemTime};
 use std::u64;
 
 use crossterm::{cursor, queue, style, style::Color, Result};
-// use log::*;
 use sysinfo::Pid;
 use unicode_width::UnicodeWidthStr;
 
@@ -355,15 +354,6 @@ impl Process {
     }
 }
 
-// Blocks:
-// 2581 - 1/8
-// 2582 - 2/8
-// 2583 - 3/8
-// 2584 - 1/2  !!
-// 2585 - 5/8
-// 2586 - 6/8
-// 2587 - 7/8
-// 2588 - FULL !!
 fn char_for_value(val: f64, conf: &Config) -> char {
     if val >= 1.0f64 {
         return '\u{2588}';
@@ -435,7 +425,6 @@ fn draw_cpu_head<W>(w: &mut W, rect: DrawRect, vals: DrawVal, scale_to: u64) -> 
 where
     W: Write,
 {
-    // queue!(w, cursor::MoveTo(0, y), style::Print("CPU\u{2502}"))?;
     let sc = if scale_to > 9999 { "!!!!\u{2502}".to_string() } else { format!("{:4}\u{2502}", scale_to) };
     queue!(w, cursor::MoveTo(0, rect.y), style::Print(&sc))?;
     if vals.max != 0 {
@@ -465,7 +454,6 @@ where
     W: Write,
 {
     {
-        // queue!(w, cursor::MoveTo(x, y), style::Print(" MEM \u{2502}"))?;
         let gmax_val = format_mem(gmax);
         let gmax_str = format!("{:>5}|", gmax_val);
         queue!(w, cursor::MoveTo(rect.x, rect.y), style::Print(gmax_str))?;
@@ -510,11 +498,9 @@ where
     W: Write,
 {
     let y = proc.y;
-    // TODO: PID in read for dead processes ?
     let pid = format!("[{}]-[{}] ", cnt, proc.pid);
     let maxw = proc.w as usize - pid.len();
     let cmd = fade_str_left(&proc.description(mode), maxw);
-    // let cmd = fade_str_left(&proc.cmd, maxw);
     let spare = maxw - cmd.width();
     let title = if spare == 0 {
         format!("{}{}", pid, cmd)
@@ -550,13 +536,6 @@ where
     Ok(())
 }
 
-// fn draw_footer<W>(w: &mut W, x: u16, y: u16, width: u16) -> Result<()>
-// where W: Write,
-// {
-//     queue!(w, cursor::MoveTo(x, y+MIN_HEIGHT+1), style::Print("=".repeat(width as usize)))
-// }
-
-// U+2502 - vertical line
 pub(crate) fn draw_counter<W>(w: &mut W, proc: &mut Process, cnt: usize, mode: TitleMode, conf: &Config) -> Result<()>
 where
     W: Write,
@@ -567,7 +546,6 @@ where
     }
 
     draw_title(w, &proc, cnt, mode)?;
-    // draw_footer(w, 0, proc.y, proc.w)?; // TODO
 
     let (cpu_w, mem_w) = if proc.sided {
         let cw = (proc.w - 2) / 2 - 4;
@@ -587,7 +565,6 @@ where
 
     proc.mem.calculate_range();
 
-    // U+2502 - vertical line
     let head_cpu_rect = DrawRect { y: proc.y + 2, h: hc - 3, ..Default::default() };
     let head_cpu_val = DrawVal { curr: proc.cpu.last(), max: proc.cpu.max };
     draw_cpu_head(w, head_cpu_rect, head_cpu_val, proc.cpu.scale_to)?;
@@ -612,10 +589,8 @@ where
 
     // TODO: do not subtract xshift here, pass XSTART & XSHIFT to draw_spikes
     let cpu_rect = DrawRect { x: 5, y: proc.y + 2, w: cpu_w - 5, h: hc - 3 };
-    // draw_spikes(w, &proc.cpu, 5, proc.y + 2, cpu_w - 5, hc - 3, 5, proc.dead_since)?;
     draw_spikes(w, &proc.cpu, cpu_rect, 5, proc.dead_since)?;
     let mem_rect = DrawRect { x: dx + 6, y: proc.y + dym + yshift, w: mem_w - 6, h: hm - yshift - 1 };
-    // draw_spikes(w, &proc.mem, dx + 6, proc.y + dym + yshift, mem_w - 6, hm - yshift - 1, 6, None)?;
     draw_spikes(w, &proc.mem, mem_rect, 6, None)?;
 
     Ok(())

@@ -3,23 +3,19 @@ mod counter;
 mod layout;
 mod ux;
 
-use std::fs::File;
+// use std::fs::File;
 use std::io::{stdout, Write};
 use std::process::exit;
 use std::time::{Duration, Instant};
 
-// use log::*;
 use atty::Stream;
-use simplelog::*;
+// use simplelog::*;
 
-use crossterm::event::{poll, read /*, DisableMouseCapture, EnableMouseCapture*/, Event, KeyCode};
+use crossterm::event::{poll, read, Event, KeyCode};
 use crossterm::terminal::{self, disable_raw_mode, enable_raw_mode, ClearType};
-use crossterm::{/*execute,*/ queue, style, Result};
-
-// use sysinfo::{ProcessExt, System, SystemExt};
+use crossterm::{queue, style, Result};
 
 fn process_events(lay: &mut layout::Layout) -> Result<()> {
-    // let mut s = System::new_all();
     let mut tm = Instant::now();
     let mut force_redraw = false;
     let mut resized = false;
@@ -74,7 +70,6 @@ fn process_events(lay: &mut layout::Layout) -> Result<()> {
                     force_redraw = true;
                     resized = true;
                 }
-                // Event::Mouse(ev) => ,
                 _ => {}
             }
         }
@@ -83,24 +78,9 @@ fn process_events(lay: &mut layout::Layout) -> Result<()> {
             continue;
         }
         force_redraw = false;
-
-        //print!(".");
-        // s.refresh_processes();
-        // println!("------");
-        // for process in s.get_process_by_name("pwatch") {
-        //     println!("{}: {} - {}", process.pid(), process.memory(), process.cpu_usage());
-        // }
-        // for (p, pp) in s.get_processes() {
-        //     if pp.cpu_usage() > 0.1 {
-        //         println!("[{}]{}: {} - {}", p, pp.name(), pp.memory()/1024, pp.cpu_usage());
-        //     }
-        // }
-        //
-
         if must_update {
             lay.update();
         }
-        // lay.cleanup();
         lay.place();
 
         let new_h = lay.counter_height();
@@ -124,8 +104,8 @@ fn main() -> Result<()> {
         eprintln!("Only TTY is supported");
         exit(2);
     }
-    let cb = ConfigBuilder::new().set_time_format("[%Y-%m-%d %H:%M:%S%.3f]".to_string()).build();
-    CombinedLogger::init(vec![WriteLogger::new(LevelFilter::Info, cb, File::create("app.log").unwrap())]).unwrap();
+    // let cb = ConfigBuilder::new().set_time_format("[%Y-%m-%d %H:%M:%S%.3f]".to_string()).build();
+    // CombinedLogger::init(vec![WriteLogger::new(LevelFilter::Info, cb, File::create("app.log").unwrap())]).unwrap();
     println!();
     enable_raw_mode()?;
     {
@@ -133,16 +113,12 @@ fn main() -> Result<()> {
         queue!(stdout, style::ResetColor, terminal::Clear(ClearType::All))?;
         stdout.flush()?;
     }
-    // let mut stdout = stdout();
-    // let config = Default::default();
     let config = config::parse_args();
     let mut lay = layout::Layout::new(config);
 
-    // execute!(stdout, EnableMouseCapture)?;
     if let Err(e) = process_events(&mut lay) {
         eprintln!("{:?}", e);
     }
-    // execute!(stdout, DisableMouseCapture)?;
 
     disable_raw_mode()?;
     Ok(())

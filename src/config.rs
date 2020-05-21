@@ -1,8 +1,6 @@
 use std::env;
 use std::process::exit;
 
-// use log::*;
-
 use getopts::{Matches, Options};
 use sysinfo::Pid;
 
@@ -38,9 +36,8 @@ impl Default for Config {
             pack: Pack::Auto,
             no_cpu: false,
             no_mem: false,
-            pid_list: Vec::new(), /*vec![13492]*/
+            pid_list: Vec::new(),
             detail: Detail::High,
-            // filter: "firefox".to_string()/*String::new()*/,
             filter: String::new(),
             scale_max: false,
             freq: 1_000,
@@ -63,7 +60,6 @@ fn print_usage(program: &str, opts: &Options) {
     print!("{}", opts.usage(&brief));
 }
 
-// TODO: error?
 pub fn parse_args() -> Config {
     let args: Vec<String> = env::args().collect();
     let program = args[0].clone();
@@ -73,7 +69,6 @@ pub fn parse_args() -> Config {
     opts.optflag("h", "help", "Show this help");
     opts.optopt("q", "quality", "Graphics quality", "high | medium | low");
     opts.optopt("r", "refresh", "Refresh graphics every N milliseconds", "MILLISECONDS");
-    // opts.optopt("n", "name", "process name", "NAME");
 
     let matches: Matches = match opts.parse(&args[1..]) {
         Ok(m) => m,
@@ -118,16 +113,10 @@ pub fn parse_args() -> Config {
         }
     }
 
-    // TODO: multi pids? names?
-    // Vec::from_iter(matches.free[1..].iter().cloned())
-    // Get only the first value for now
     let names = &matches.free[0];
     let is_pid = names.chars().all(|c| c.is_numeric() || c == ',');
-    // info!("{} -{}", names, is_pid);
     if is_pid {
-        // TODO: string to list of PIDs
         for pd in names.split(',') {
-            // info!(">> {}", pd);
             if let Ok(i) = pd.parse::<usize>() {
                 conf.pid_list.push(i as Pid);
             }

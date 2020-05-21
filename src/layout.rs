@@ -6,8 +6,6 @@ use crate::config::{Config, Pack};
 use crate::counter::{draw_counter, Process};
 use crate::ux::{cut_string, format_duration};
 
-// use log::*;
-
 use crossterm::{cursor, queue, style, style::Color, terminal, Result};
 use regex::Regex;
 use sysinfo::{ProcessExt, ProcessorExt, System, SystemExt};
@@ -81,7 +79,6 @@ impl Layout {
         let h_line = MIN_HEIGHT * 2 + 4; // title*2+2*graph+2*extra
 
         let h = self.h - 1; // total CPU%/MEM%, alive/hidden/dead
-                            // info!("h_side {}, h_line {}, h {}", h_side, h_line, h);
 
         let max_n_l = h / h_line;
         let max_n_s = h / h_side;
@@ -100,12 +97,10 @@ impl Layout {
         if procs != 0 {
             let shown = if procs < cnt { procs } else { cnt };
             let used = shown as u16 * hgt;
-            // info!("procs {}, used {}, hgt {}, h {}", procs, used, hgt, h);
             if h - used > procs as u16 {
                 hgt += (h - used) / procs as u16;
             }
         }
-        // info!("cnt {}, hgt {}", cnt, hgt);
 
         (cnt, hgt, tp)
     }
@@ -126,10 +121,7 @@ impl Layout {
             let flt = format!("(?i){}", self.config.filter);
             let rx = Regex::new(&flt);
             let low_flt = self.config.filter.to_lowercase();
-            // let procs = self.system.get_process_by_name(&self.config.filter);
-            // for p in &procs {
             for p in procs.values() {
-                // println!("{} - {} : {}", p.name(), p.memory(), p.cpu_usage());
                 let pname = p.exe().to_string_lossy();
                 let full_name = format!("{} {}", pname, p.name());
                 let low_name = full_name.to_lowercase();
@@ -186,45 +178,22 @@ impl Layout {
         self.update_total();
     }
 
-    // delete all dead processes that are invisible
-    // pub fn cleanup(&mut self) {
-    //     let (mx, _h, _pack) = self.max_shown();
-    //     let l = self.procs.len() ;
-    //     if l <= mx {
-    //         return;
-    //     }
-    //     let mut i = 0;
-    //     self.procs.retain(|v| (i < l || !v.dead, i += 1).0);
-    // }
-
     pub fn place(&mut self) {
         if self.procs.is_empty() {
             return;
         }
         let l = self.procs.len();
         let (mx, h, pack) = self.max_shown();
-        // info!("Max {}, height {}", mx, h);
-        // for idx in 0..mx {
-        //     if idx >= l {
-        //         return;
-        //     }
-        //     self.procs[idx].dim(0,  idx as u16 * h + 1, self.w, h, pack == Pack::Side);
-        // }
-        // for idx in mx..l {
-        //     self.procs[idx].dim(0, 0, 0, 0, false);
-        // }
         for idx in 0..l {
             if idx < self.top_item || idx >= self.top_item + mx {
                 self.procs[idx].dim(0, 0, 0, 0, false);
-            // info!("HIDE: {}", idx);
             } else {
                 self.procs[idx].dim(0, (idx - self.top_item) as u16 * h + 1, self.w, h, pack == Pack::Side);
-                // info!("SHOW: {}", idx);
             }
         }
     }
 
-    // Retunrs total number of watched processes, hidden, and dead
+    // Returns total number of watched processes, hidden, and dead
     pub(crate) fn proc_totals(&self) -> (usize, usize, usize) {
         let total = self.procs.len();
         if total == 0 {
@@ -245,7 +214,6 @@ impl Layout {
 
     pub fn draw_counters(&mut self) -> Result<()> {
         let mut stdout = stdout();
-        // queue!(stdout, style::ResetColor, terminal::Clear(ClearType::All))?;
         if self.show_help {
             draw_help(&mut stdout, self)?;
         } else {
@@ -270,7 +238,6 @@ impl Layout {
             return false;
         }
         let shown = t - h;
-        // info!("{}. {}[{}] - {} down: {}", self.top_item, t, h, shown, shift);
         if shift == SCROLL_HOME {
             let res = self.top_item != 0;
             self.top_item = 0;
