@@ -106,6 +106,7 @@ fn main() -> Result<()> {
     }
     // let cb = ConfigBuilder::new().set_time_format("[%Y-%m-%d %H:%M:%S%.3f]".to_string()).build();
     // CombinedLogger::init(vec![WriteLogger::new(LevelFilter::Info, cb, File::create("app.log").unwrap())]).unwrap();
+    let config = config::parse_args();
     println!();
     enable_raw_mode()?;
     {
@@ -113,7 +114,6 @@ fn main() -> Result<()> {
         queue!(stdout, style::ResetColor, terminal::Clear(ClearType::All))?;
         stdout.flush()?;
     }
-    let config = config::parse_args();
     let mut lay = layout::Layout::new(config);
 
     if let Err(e) = process_events(&mut lay) {
