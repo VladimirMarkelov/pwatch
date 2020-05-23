@@ -452,11 +452,10 @@ where
     queue!(w, cursor::MoveTo(0, rect.y), style::Print(&sc))?;
     if vals.max != 0 {
         let s = if vals.max > 9999 { ">10K\u{2502}".to_string() } else { format!("{:4}\u{2502}", vals.max) };
-        queue!(w, cursor::MoveTo(0, rect.y + 3), style::Print(s))?;
+        queue!(w, cursor::MoveTo(0, rect.y + 2), style::Print(s))?;
     } else {
-        queue!(w, cursor::MoveTo(0, rect.y + 3), style::Print("    \u{2502}"))?;
+        queue!(w, cursor::MoveTo(0, rect.y + 2), style::Print("    \u{2502}"))?;
     }
-    queue!(w, cursor::MoveTo(0, rect.y + 2), style::Print("    \u{2502}"))?;
     let s = if vals.curr > 9999 { ">10K".to_string() } else { format!("{:4}", vals.curr) };
     queue!(
         w,
@@ -466,7 +465,7 @@ where
         style::ResetColor,
         style::Print("\u{2502}")
     )?;
-    for idx in 4..rect.h {
+    for idx in 3..rect.h {
         queue!(w, cursor::MoveTo(0, rect.y + idx), style::Print("    \u{2502}"))?;
     }
     Ok(())
