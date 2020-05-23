@@ -1,5 +1,7 @@
 # Process Watcher (PWatch)
 
+![Build](https://github.com/VladimirMarkelov/pwatch/workflows/Quickstart/badge.svg)
+
 - [Description](#description)
     - [Options](#options)
 - [Short Demo](#short-demo)
@@ -11,8 +13,6 @@
 - [Dead processes](#dead-processes)
 
 ## Description
-
-![Build](https://github.com/VladimirMarkelov/pwatch/workflows/Quickstart/badge.svg)
 
 PWatch provides a dynamic real-time view of running processes with historical graphs.
 The application is akin to well-know utility `top`. But while `top` is great for quick system overview,
