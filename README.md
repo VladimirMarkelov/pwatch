@@ -54,6 +54,9 @@ The first line is a system total numbers:
 CPU:   0%  MEM:  33% | Total: 3  Hidden: 0  Dead: 0
 ```
 
+The line with `I/O` is the total and the change since the previous measurement(in braces) amount of read and write data.
+For Linux it should display disk I/O, for Windows it is total I/O for the process including disks.
+
 CPU and MEM is total used amount in a range 0..100%. `Total` is the number of processes `PWatch` looks after.
 `Hidden` is the number of processes that are not displayed at this moment, but you can scroll to see others.
 `Dead` the number of processes that exited while `PWatch` is watching the processes. Dead processes are not removed
