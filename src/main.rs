@@ -63,6 +63,7 @@ fn process_events(lay: &mut layout::Layout) -> Result<()> {
                 },
                 Event::Resize(width, height) => {
                     if width < 30 || height < 10 {
+                        disable_raw_mode()?;
                         eprintln!("Requires terminal width at least 30 and height at least 10 characters");
                         exit(1);
                     }
@@ -109,6 +110,16 @@ fn main() -> Result<()> {
     let config = config::parse_args();
     println!();
     enable_raw_mode()?;
+    if let Ok((cols, rows)) = terminal::size() {
+        if cols < 30 || rows < 10 {
+            terminal::disable_raw_mode()?;
+            eprintln!("Requires terminal width at least 30 and height at least 10 characters");
+            exit(2);
+        }
+    } else {
+        eprintln!("Failed to read terminal size");
+        exit(2);
+    }
     {
         let mut stdout = stdout();
         queue!(stdout, style::ResetColor, terminal::Clear(ClearType::All))?;

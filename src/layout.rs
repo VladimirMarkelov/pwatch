@@ -1,5 +1,4 @@
 use std::io::{stdout, Write};
-use std::process::exit;
 use std::time::SystemTime;
 
 use crate::config::{Config, Pack};
@@ -43,15 +42,7 @@ pub(crate) enum Scroll {
 
 impl Layout {
     pub(crate) fn new(config: Config) -> Layout {
-        let (w, h) = if let Ok((cols, rows)) = terminal::size() {
-            if cols < 30 || rows < 10 {
-                eprintln!("Requires terminal width at least 30 and height at least 10 characters");
-                exit(1);
-            }
-            (cols, rows)
-        } else {
-            (40, 20)
-        };
+        let (w, h) = if let Ok((cols, rows)) = terminal::size() { (cols, rows) } else { (40, 20) };
         Layout {
             w,
             h,

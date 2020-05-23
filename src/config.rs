@@ -72,6 +72,7 @@ pub(crate) fn parse_args() -> Config {
     opts.optflag("h", "help", "Show this help");
     opts.optopt("q", "quality", "Graphics quality", "high | medium | low");
     opts.optopt("r", "refresh", "Refresh graphics every N milliseconds", "MILLISECONDS");
+    opts.optflag("v", "version", "Print application version");
 
     let matches: Matches = match opts.parse(&args[1..]) {
         Ok(m) => m,
@@ -82,10 +83,16 @@ pub(crate) fn parse_args() -> Config {
         }
     };
 
+    if matches.opt_present("version") {
+        let version = env!("CARGO_PKG_VERSION");
+        println!("PWatch Version {}", version);
+        exit(0);
+    }
     if matches.opt_present("h") || matches.free.is_empty() {
         print_usage(&program, &opts);
         exit(0);
     }
+
     if matches.opt_present("q") {
         let val = match matches.opt_str("q") {
             None => String::new(),
