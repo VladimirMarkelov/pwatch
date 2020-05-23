@@ -58,8 +58,8 @@ The line with `I/O` is the total and the change since the previous measurement(i
 For Linux it should display disk I/O, for Windows it is total I/O for the process including disks.
 
 CPU and MEM is total used amount in a range 0..100%. `Total` is the number of processes `PWatch` looks after.
-`Hidden` is the number of processes that are not displayed at this moment, but you can scroll to see others.
-`Dead` the number of processes that exited while `PWatch` is watching the processes. Dead processes are not removed
+`Hidden` is the number of processes that are not displayed at this moment, but you can scroll to see them.
+`Dead` the number of processes that exited while `PWatch` is watching the processes. [Dead processes](#dead-processes) are not removed
 from the screen, but `PWatch` stops updating them, so dead process graph are kind of frozen.
 
 CPU and MEM graphs have the same header. The MEM one is used to describe what they show:
@@ -118,7 +118,7 @@ since the monitoring starts(top).
 
 ## Measuring Difference
 
-Hotkey `SPACE` switches between two ways of calculating the difference. Default way show the difference between
+Hotkey `SPACE` switches between two ways of calculating the difference. Default way shows the difference between
 the previous and the current consumptions. After pressing `SPACE`, the message `Delta for last 0s` is show at the
 top, `PWatch` remembers the current value, and then it shows the difference between the current and remembered 
 value.
@@ -131,7 +131,7 @@ value.
 | F9 | Switch process title: `full command line`(default) - the end of it if it is longer than the screen width, `full path to binary`, `binary name` |
 | F12 | Switch memory scaling mode: `from min to max`(default), `from 0 to max` |
 | r | Reset all-time maximum: set the maximum to the maximum in visible interval |
-| SPACE | Set|Unset the point in time from which the usage difference is calculated |
+| SPACE | Set/Unset the point in time from which the usage difference is calculated |
 | q | Exit |
 | ESC | Exit |
 | Arrows, PageUp, and PageDown | Scroll the list of processes if some of them are out of screen |
@@ -141,5 +141,5 @@ value.
 ## Dead processes
 
 Even when a process exits, `PWatch` does not remove the process graphs. It keeps displaying the last registered values,
-and add a message (it replaces of CPU's "+/-" bottom line) how much time ago the process finished. It is very useful to
+and add a message (it replaces CPU's "+/-" bottom line) how much time ago the process finished. It is very useful to
 check what happens before the process exited or crashed without constant staring at the screen.
