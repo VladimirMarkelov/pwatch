@@ -251,6 +251,8 @@ pub(crate) struct Process {
     pub(crate) io_w_delta: u64, // IO write since last check
     pub(crate) io_r_delta: u64, // IO read since last check
     pub(crate) dead_since: Option<SystemTime>, // Time when the process has exited (or been interrupted)
+    mark_r_io: Option<u64>,     // value when a user pressed a key to mark the position
+    mark_w_io: Option<u64>,     // value when a user pressed a key to mark the position
 }
 
 impl PartialEq for Process {
@@ -308,6 +310,8 @@ impl Process {
             io_w_delta: 0,
             io_r_delta: 0,
             dead_since: None,
+            mark_r_io: None,
+            mark_w_io: None,
             sided,
             pid,
             cmd,
@@ -346,6 +350,14 @@ impl Process {
     }
     pub(crate) fn toggle_mark(&mut self) {
         self.mem.toggle_mark();
+        let is_off = self.mark_r_io.is_none();
+        if is_off {
+            self.mark_r_io = Some(self.io_r_total);
+            self.mark_w_io = Some(self.io_w_total);
+        } else {
+            self.mark_r_io = None;
+            self.mark_w_io = None;
+        }
     }
     pub(crate) fn reset_max(&mut self) {
         self.cpu.reset_max();
@@ -533,21 +545,23 @@ where
     queue!(w, cursor::MoveTo(0, y), style::Print(title))?;
 
     let y = y + 1;
+    let delta_r = if let Some(b) = proc.mark_r_io { proc.io_r_total - b } else { proc.io_r_delta };
+    let delta_w = if let Some(b) = proc.mark_w_io { proc.io_w_total - b } else { proc.io_w_delta };
     let mut title = if proc.w < 40 {
         format!(
             "R: {}({}) W: {}({})",
             format_bytes(proc.io_r_total),
-            format_bytes(proc.io_r_delta),
+            format_bytes(delta_r),
             format_bytes(proc.io_w_total),
-            format_bytes(proc.io_w_delta),
+            format_bytes(delta_w),
         )
     } else {
         format!(
             "IO: Read {}({}), Write {}({})",
             format_bytes(proc.io_r_total),
-            format_bytes(proc.io_r_delta),
+            format_bytes(delta_r),
             format_bytes(proc.io_w_total),
-            format_bytes(proc.io_w_delta),
+            format_bytes(delta_w),
         )
     };
     if title.width() < maxw {
