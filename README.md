@@ -46,6 +46,9 @@ The image below displays what happens to a few Firefox processes after a user cl
 
 <img src="./images/pwatch.gif" alt="Watching Firefox processes">
 
+When the number of processes is low, instead of showing CPU and MEM graphs side by side (as in the example), the application
+displays CPU on top of MEM graph. It allows `PWatch` to provide longer usage history.
+
 ### Screen Explanation
 
 The first line is a system total numbers:
@@ -125,7 +128,7 @@ value.
 
 ## Hot Keys
 
-| Key | description |
+| Key | Description |
 | --- | --- |
 | F1 | Show/hide the short hotkey "tooltip" at the top of the window |
 | F9 | Switch process title: `full command line`(default) - the end of it if it is longer than the screen width, `full path to binary`, `binary name` |
