@@ -20,16 +20,25 @@ pub(crate) enum Detail {
     High,   // Nine blocks from empty one to full one with 1/8 step
 }
 
+// What to show as process title
+#[derive(Copy, Clone)]
+pub(crate) enum TitleMode {
+    Cmd,   // full command line (the end of it if it is too long)
+    Exe,   // full path to binary
+    Title, // binary name
+}
+
 #[derive(Clone)]
 pub(crate) struct Config {
-    pub(crate) pack: Pack,         // How to show CPU and MEM of the same process
-    pub(crate) no_cpu: bool,       // do not show CPU (unused yet)
-    pub(crate) no_mem: bool,       // do not show MEM (unused yet)
-    pub(crate) pid_list: Vec<Pid>, // list of process PIDs provided by a user in command-line
-    pub(crate) filter: String,     // regular expression to filter process by their name/path to binary
-    pub(crate) detail: Detail,     // Graph details (set of characters used to display graphs)
+    pub(crate) pack: Pack,            // How to show CPU and MEM of the same process
+    pub(crate) no_cpu: bool,          // do not show CPU (unused yet)
+    pub(crate) no_mem: bool,          // do not show MEM (unused yet)
+    pub(crate) pid_list: Vec<Pid>,    // list of process PIDs provided by a user in command-line
+    pub(crate) filter: String,        // regular expression to filter process by their name/path to binary
+    pub(crate) detail: Detail,        // Graph details (set of characters used to display graphs)
     pub(crate) scale_max: bool, // How to scale MEM graph: true - from 0 ro all-time max, false - from displayed min to max
     pub(crate) freq: u64,       // process stats refresh rate in range 0.25s .. 10s
+    pub(crate) title_mode: TitleMode, // what use for a process title when displaying it
 }
 
 impl Default for Config {
@@ -43,6 +52,7 @@ impl Default for Config {
             filter: String::new(),
             scale_max: false,
             freq: 1_000,
+            title_mode: TitleMode::Cmd,
         }
     }
 }
@@ -73,6 +83,8 @@ pub(crate) fn parse_args() -> Config {
     opts.optopt("q", "quality", "Graphics quality", "high | medium | low");
     opts.optopt("r", "refresh", "Refresh graphics every N milliseconds", "MILLISECONDS");
     opts.optflag("v", "version", "Print application version");
+    opts.optopt("s", "scale", "Memory graph scaling mode", "zero | min");
+    opts.optopt("t", "title", "Set process title", "name | path | cmd");
 
     let matches: Matches = match opts.parse(&args[1..]) {
         Ok(m) => m,
@@ -93,11 +105,7 @@ pub(crate) fn parse_args() -> Config {
         exit(0);
     }
 
-    if matches.opt_present("q") {
-        let val = match matches.opt_str("q") {
-            None => String::new(),
-            Some(s) => s.to_lowercase(),
-        };
+    if let Some(val) = matches.opt_str("q") {
         conf.detail = match val.as_str() {
             "high" => Detail::High,
             "medium" => Detail::Medium,
@@ -109,16 +117,39 @@ pub(crate) fn parse_args() -> Config {
             }
         }
     }
-    if matches.opt_present("r") {
-        if let Some(v) = matches.opt_str("r") {
-            if let Ok(n) = v.parse::<u64>() {
-                conf.freq = if n < 250 {
-                    250
-                } else if n > 10_000 {
-                    10_000
-                } else {
-                    n
-                };
+    if let Some(v) = matches.opt_str("r") {
+        if let Ok(n) = v.parse::<u64>() {
+            conf.freq = if n < 250 {
+                250
+            } else if n > 10_000 {
+                10_000
+            } else {
+                n
+            };
+        }
+    }
+
+    if let Some(s) = matches.opt_str("s") {
+        conf.scale_max = match s.as_str() {
+            "zero" => true,
+            "min" => false,
+            _ => {
+                eprintln!("Invalid value '{}' for scale. Must be 'zero' or 'min'", s);
+                print_usage(&program, &opts);
+                exit(1);
+            }
+        }
+    }
+
+    if let Some(t) = matches.opt_str("t") {
+        conf.title_mode = match t.as_str() {
+            "name" => TitleMode::Title,
+            "path" => TitleMode::Exe,
+            "cmd" => TitleMode::Cmd,
+            _ => {
+                eprintln!("Invalid value '{}' for title. Must be one of 'name', 'path', and 'cmd'", t);
+                print_usage(&program, &opts);
+                exit(1);
             }
         }
     }

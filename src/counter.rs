@@ -9,8 +9,7 @@ use crossterm::{cursor, queue, style, style::Color, Result};
 use sysinfo::Pid;
 use unicode_width::UnicodeWidthStr;
 
-use crate::config::{Config, Detail};
-use crate::layout::TitleMode;
+use crate::config::{Config, Detail, TitleMode};
 use crate::ux::{fade_str_left, format_bytes, format_diff, format_duration, format_mem, round_to_hundred, short_round};
 
 // set of charcters for different graph detalizations

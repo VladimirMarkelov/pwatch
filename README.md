@@ -39,6 +39,8 @@ only binary name, that allows to watch a set of differently-named processes star
 | v | version | Show application version | |
 | q | quality | Set [graph quality](graph-quality) | One of `high`, `medium` or `low` |
 | r | refresh | Set refresh interval in milliseconds | Default value is `1000`, only numbers within range `250`..`10000` can be used |
+| s | scale | Select memory graph scaling mode | `zero` - the graph display range is from `0` to `maximum`; `min`(default) - from `minimum` to `maximum` |
+| t | title | Set title for a process | `cmd`(default) - process command line, `path` - path to binary, `name` - binary name | 
 
 ## Short Demo
 

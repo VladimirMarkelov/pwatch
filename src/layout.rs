@@ -1,7 +1,7 @@
 use std::io::{stdout, Write};
 use std::time::SystemTime;
 
-use crate::config::{Config, Pack};
+use crate::config::{Config, Pack, TitleMode};
 use crate::counter::{draw_counter, Process};
 use crate::ux::{cut_string, format_duration};
 
@@ -9,13 +9,6 @@ use crossterm::{cursor, queue, style, style::Color, terminal, Result};
 use regex::Regex;
 use sysinfo::{ProcessExt, ProcessorExt, System, SystemExt};
 use unicode_width::UnicodeWidthStr;
-
-#[derive(Copy, Clone)]
-pub(crate) enum TitleMode {
-    Cmd,
-    Exe,
-    Title,
-}
 
 pub(crate) struct Layout {
     pub(crate) w: u16,
@@ -27,8 +20,7 @@ pub(crate) struct Layout {
     pub(crate) mem_usage: u64,  // total MEM%
     pub(crate) top_item: usize, // first shown counter (used only if there are hidden counters)
     pub(crate) mark_since: Option<SystemTime>,
-    show_help: bool,       // show help bar(true) or total CPU/MEM(false) in the top line
-    title_mode: TitleMode, // what use for a process title when displaying it
+    show_help: bool, // show help bar(true) or total CPU/MEM(false) in the top line
 }
 
 pub(crate) const MIN_HEIGHT: u16 = 5; // minimum height of a graph
@@ -54,7 +46,6 @@ impl Layout {
             top_item: 0,
             mark_since: None,
             show_help: false,
-            title_mode: TitleMode::Cmd,
         }
     }
 
@@ -226,7 +217,7 @@ impl Layout {
             if proc.w == 0 {
                 break;
             }
-            draw_counter(&mut stdout, proc, idx + 1, self.title_mode, &self.config)?;
+            draw_counter(&mut stdout, proc, idx + 1, self.config.title_mode, &self.config)?;
         }
         stdout.flush()?;
         Ok(())
@@ -308,8 +299,8 @@ impl Layout {
     }
 
     pub(crate) fn switch_title_type(&mut self) {
-        let old = self.title_mode;
-        self.title_mode = match old {
+        let old = self.config.title_mode;
+        self.config.title_mode = match old {
             TitleMode::Cmd => TitleMode::Exe,
             TitleMode::Exe => TitleMode::Title,
             TitleMode::Title => TitleMode::Cmd,
