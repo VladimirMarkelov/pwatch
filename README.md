@@ -6,6 +6,7 @@
     - [Options](#options)
 - [Short Demo](#short-demo)
     - [Screen Explanation](#screen-explanation)
+- [Precompiled binaries](#precompiled-binaries)
 - [Graph Quality](#graph-quality)
 - [Scaling Mode](#scaling-mode)
 - [Measuring Difference](#measuring-difference)
@@ -98,6 +99,13 @@ process since the monitor starts. The value can be reset with hotkey `r`.
 
 The line of `+`'s and `-`'s marks points in time when the value changed. It may look redundant, but when changes are
 so small that the graph remains a straight line, these extra characters may come in handy.
+
+## Precompiled binaries
+
+For Windows and Ubuntu you can download precompiled binaries from [Release page](https://github.com/VladimirMarkelov/pwatch/releases).
+
+* Windows binary tested on Windows 10.
+* musl-Linux build
 
 ## Graph Quality
 
