@@ -1,7 +1,7 @@
 use std::io::{stdout, Write};
 use std::time::SystemTime;
 
-use crate::config::{Config, Pack, TitleMode};
+use crate::config::{Config, Pack};
 use crate::counter::{draw_counter, Process};
 use crate::ux::{cut_string, format_duration};
 
@@ -297,15 +297,6 @@ impl Layout {
     pub(crate) fn switch_help(&mut self) {
         self.show_help = !self.show_help;
     }
-
-    pub(crate) fn switch_title_type(&mut self) {
-        let old = self.config.title_mode;
-        self.config.title_mode = match old {
-            TitleMode::Cmd => TitleMode::Exe,
-            TitleMode::Exe => TitleMode::Title,
-            TitleMode::Title => TitleMode::Cmd,
-        };
-    }
 }
 
 fn update_proc<P>(procs: &mut Vec<Process>, p: &P)
@@ -351,7 +342,7 @@ fn draw_help<W>(w: &mut W, layout: &Layout) -> Result<()>
 where
     W: Write,
 {
-    let help_str = "SPACE: Mark | r: Reset max | F9: Title | F12: Scale";
+    let help_str = "SPACE: Mark | r: Reset max | F7: Quality | F9: Title | F12: Scale";
     let mut s = cut_string(help_str, layout.w as usize);
     let width = s.width();
     if width < layout.w as usize {

@@ -13,7 +13,7 @@ pub(crate) enum Pack {
 }
 
 // Graph details: a user can choose lower details if terminal font does not include all required characters
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 pub(crate) enum Detail {
     Low,    // Only full and empty blocks are used
     Medium, // Full, half-full, and empty blocks are used
@@ -65,6 +65,24 @@ impl Config {
             Detail::Medium => 2,
             Detail::High => 8,
         }
+    }
+
+    pub(crate) fn switch_title_type(&mut self) {
+        let old = self.title_mode;
+        self.title_mode = match old {
+            TitleMode::Cmd => TitleMode::Exe,
+            TitleMode::Exe => TitleMode::Title,
+            TitleMode::Title => TitleMode::Cmd,
+        };
+    }
+
+    pub(crate) fn switch_quality(&mut self) {
+        let old = self.detail;
+        self.detail = match old {
+            Detail::High => Detail::Medium,
+            Detail::Medium => Detail::Low,
+            Detail::Low => Detail::High,
+        };
     }
 }
 
