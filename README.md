@@ -138,18 +138,19 @@ value.
 
 ## Hot Keys
 
-| Key | Description |
-| --- | --- |
-| F1 | Show/hide the short hotkey "tooltip" at the top of the window |
-| F9 | Switch process title: `full command line`(default) - the end of it if it is longer than the screen width, `full path to binary`, `binary name` |
-| F12 | Switch memory scaling mode: `from min to max`(default), `from 0 to max` |
-| r | Reset all-time maximum: set the maximum to the maximum in visible interval |
-| SPACE | Set/Unset the point in time from which the usage difference is calculated |
-| q | Exit |
-| ESC | Exit |
-| Arrows, PageUp, and PageDown | Scroll the list of processes if some of them are out of screen |
-| Home | Scroll to the first process in the list |
-| End | Scroll so the last process in the list is visible |
+| Key                          | Description                                                                                                                                    |
+| ---                          | ---                                                                                                                                            |
+| F1                           | Show/hide the short hotkey "tooltip" at the top of the window                                                                                  |
+| F7                           | Change graphs quality, cycles through `high`, `medium`, and `low`                                                                              |
+| F9                           | Switch process title: `full command line`(default) - the end of it if it is longer than the screen width, `full path to binary`, `binary name` |
+| F12                          | Switch memory scaling mode: `from min to max`(default), `from 0 to max`                                                                        |
+| r                            | Reset all-time maximum: set the maximum to the maximum in visible interval                                                                     |
+| SPACE                        | Set/Unset the point in time from which the usage difference is calculated                                                                      |
+| q                            | Exit                                                                                                                                           |
+| ESC                          | Exit                                                                                                                                           |
+| Arrows, PageUp, and PageDown | Scroll the list of processes if some of them are out of screen                                                                                 |
+| Home                         | Scroll to the first process in the list                                                                                                        |
+| End                          | Scroll so the last process in the list is visible                                                                                              |
 
 ## Dead processes
 
