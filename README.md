@@ -113,11 +113,11 @@ By default, graph are drawn in the best quality. But not every font supports use
 detalization if a terminal font lack some characters. E.g., `Consolas` and `Currier New` have only 3 of required 9
 characters, so they can be used only for `medium` quality.
 
-| Quality | Character set |
-| --- | --- |
-| Low | ` ` and `█`(full block) |
-| medium | ` `, `▄`(half block), and `█` |
-| high | ` ▂▃▄▅▆▇█` |
+| Quality | Character set                     |
+| ---     | ---                               |
+| Low     | `SPACE` and `█`(full block)       |
+| medium  | `SPACE`, `▄`(half block), and `█` |
+| high    | ` ▂▃▄▅▆▇█`                        |
 
 ## Scaling Mode
 
