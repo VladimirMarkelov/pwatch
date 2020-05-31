@@ -325,7 +325,7 @@ dependencies = [
 
 [[package]]
 name = "pwatch"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "atty 0.2.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "crossterm 0.17.4 (registry+https://github.com/rust-lang/crates.io-index)",
