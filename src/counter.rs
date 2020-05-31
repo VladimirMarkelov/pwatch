@@ -9,7 +9,7 @@ use crossterm::{cursor, queue, style, style::Color, Result};
 use sysinfo::Pid;
 use unicode_width::UnicodeWidthStr;
 
-use crate::config::{Config, Detail, TitleMode};
+use crate::config::{Config, Detail, TitleMode, Graph};
 use crate::ux::{fade_str_left, format_bytes, format_diff, format_duration, format_mem, round_to_hundred, short_round};
 
 // set of charcters for different graph detalizations
@@ -295,7 +295,7 @@ impl PartialOrd for Process {
 }
 
 impl Process {
-    pub(crate) fn new(pid: Pid, sided: bool, cmd: String, exe: String, title: String) -> Process {
+    pub(crate) fn new(pid: Pid, cmd: String, exe: String, title: String) -> Process {
         let mut p = Process {
             cpu: Default::default(),
             mem: Default::default(),
@@ -311,7 +311,7 @@ impl Process {
             dead_since: None,
             mark_r_io: None,
             mark_w_io: None,
-            sided,
+            sided: false,
             pid,
             cmd,
             exe,
@@ -323,7 +323,7 @@ impl Process {
     }
 
     // set new dimensions for a counter. Zero width disables drawing the counter
-    pub(crate) fn dim(&mut self, x: u16, y: u16, w: u16, h: u16, sided: bool) {
+    pub(crate) fn dim(&mut self, x: u16, y: u16, w: u16, h: u16, sided: bool, graphs: Graph) {
         self.x = x;
         self.y = y;
         self.w = w;
@@ -332,6 +332,12 @@ impl Process {
 
         if w == 0 {
             return;
+        }
+
+        if graphs != Graph::All {
+            self.cpu.display_cnt = w as usize;
+            self.mem.display_cnt = w as usize;
+            return
         }
 
         let cp_w = if self.sided { (w / 2) - 6 } else { w - 6 };

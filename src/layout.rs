@@ -146,9 +146,10 @@ impl Layout {
         let pack = self.config.packer(l, draw_height);
         for idx in 0..l {
             if idx < self.top_item || idx >= self.top_item + mx {
-                self.procs[idx].dim(0, 0, 0, 0, false); // out of screen
+                self.procs[idx].dim(0, 0, 0, 0, false, self.config.graphs); // out of screen
             } else {
-                self.procs[idx].dim(0, (idx - self.top_item) as u16 * h + 1, self.w, h, pack == Pack::Side);
+                let y = (idx - self.top_item) as u16 * h + 1;
+                self.procs[idx].dim(0, y, self.w, h, pack == Pack::Side, self.config.graphs);
             }
         }
     }
@@ -253,14 +254,7 @@ impl Layout {
     }
 
     pub(crate) fn counter_height(&self) -> u16 {
-        let mut new_h = 0u16;
-        for p in self.procs.iter() {
-            if p.h != 0 {
-                new_h = p.h;
-                break;
-            }
-        }
-        new_h
+        self.config.graph_height(self.procs.len(), self.h - 1)
     }
 
     pub(crate) fn switch_help(&mut self) {
@@ -298,7 +292,7 @@ where
     let exe = p.exe().to_string_lossy().to_string();
     let title = p.name().to_string();
 
-    let mut ap = Process::new(p.pid(), false, cmd, exe, title);
+    let mut ap = Process::new(p.pid(), cmd, exe, title);
     let prc: u64 = p.cpu_usage().round() as u64;
     ap.add(prc, p.memory());
     let du = p.disk_usage();

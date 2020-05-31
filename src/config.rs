@@ -33,9 +33,9 @@ pub(crate) enum TitleMode {
 // Which resource graphs to show
 #[derive(Copy, Clone, PartialEq)]
 pub(crate) enum Graph {
-    Both,
-    MEM,
-    CPU,
+    All,
+    Mem,
+    Cpu,
 }
 
 // How to show CPU and MEM graphs
@@ -73,7 +73,7 @@ impl Default for Config {
             scale_max: false,
             freq: 1_000,
             title_mode: TitleMode::Cmd,
-            graphs: Graph::Both,
+            graphs: Graph::All,
             graph_pos: GraphPosition::Auto,
         }
     }
@@ -108,7 +108,7 @@ impl Config {
     }
 
     pub(crate) fn min_graph_height(&self) -> u16 {
-        if self.graph_pos == GraphPosition::Top && self.graphs == Graph::Both {
+        if self.graph_pos == GraphPosition::Top && self.graphs == Graph::All {
             // 2 graphs with +/-, title, IO
             GRAPH_AREA * 2 + 2 + 2
         } else {
@@ -118,7 +118,7 @@ impl Config {
     }
 
     pub(crate) fn max_graph_height(&self) -> u16 {
-        if self.graph_pos == GraphPosition::Sided || self.graphs != Graph::Both {
+        if self.graph_pos == GraphPosition::Sided || self.graphs != Graph::All {
             // Graph with +/-, title, IO
             GRAPH_AREA + 1 + 1 + 1
         } else {
@@ -183,6 +183,7 @@ pub(crate) fn parse_args() -> Config {
     opts.optflag("v", "version", "Print application version");
     opts.optopt("s", "scale", "Memory graph scaling mode", "zero | min");
     opts.optopt("t", "title", "Set process title", "name | path | cmd");
+    opts.optopt("g", "graphs", "Select which graphs to show", "all | mem | cpu");
 
     let matches: Matches = match opts.parse(&args[1..]) {
         Ok(m) => m,
@@ -246,6 +247,19 @@ pub(crate) fn parse_args() -> Config {
             "cmd" => TitleMode::Cmd,
             _ => {
                 eprintln!("Invalid value '{}' for title. Must be one of 'name', 'path', and 'cmd'", t);
+                print_usage(&program, &opts);
+                exit(1);
+            }
+        }
+    }
+
+    if let Some(t) = matches.opt_str("g") {
+        conf.graphs = match t.as_str() {
+            "all" => Graph::All,
+            "mem" => Graph::Mem,
+            "cpu" => Graph::Cpu,
+            _ => {
+                eprintln!("Invalid value '{}' for graphs. Must be one of 'all', 'mem', and 'cpu'", t);
                 print_usage(&program, &opts);
                 exit(1);
             }
