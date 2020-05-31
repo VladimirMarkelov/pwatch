@@ -305,7 +305,9 @@ fn draw_help<W>(w: &mut W, layout: &Layout) -> Result<()>
 where
     W: Write,
 {
-    let help_str = "SPACE: Mark | r: Reset max | F7: Quality | F9: Title | F12: Scale";
+    // Keep the least useful keys at the end as they can be removed when squeezing the string to
+    // screen width
+    let help_str = "SPACE: Mark | F6: Graph | F7: Quality | F9: Title | F12: Scale | r: Reset max";
     let mut s = cut_string(help_str, layout.w as usize);
     let width = s.width();
     if width < layout.w as usize {

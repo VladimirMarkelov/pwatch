@@ -35,13 +35,14 @@ only binary name, that allows to watch a set of differently-named processes star
 
 ### Options
 
-| Short name | Long name | Description | Values |
-| --- | --- | --- | --- |
-| v | version | Show application version | |
-| q | quality | Set [graph quality](graph-quality) | One of `high`, `medium` or `low` |
-| r | refresh | Set refresh interval in milliseconds | Default value is `1000`, only numbers within range `250`..`10000` can be used |
-| s | scale | Select memory graph scaling mode | `zero` - the graph display range is from `0` to `maximum`; `min`(default) - from `minimum` to `maximum` |
-| t | title | Set title for a process | `cmd`(default) - process command line, `path` - path to binary, `name` - binary name | 
+| Short name | Long name | Description                          | Values                                                                                                  |
+| ---        | ---       | ---                                  | ---                                                                                                     |
+| v          | version   | Show application version             |                                                                                                         |
+| q          | quality   | Set [graph quality](graph-quality)   | One of `high`, `medium` or `low`                                                                        |
+| r          | refresh   | Set refresh interval in milliseconds | Default value is `1000`, only numbers within range `250`..`10000` can be used                           |
+| s          | scale     | Select memory graph scaling mode     | `zero` - the graph display range is from `0` to `maximum`; `min`(default) - from `minimum` to `maximum` |
+| t          | title     | Set title for a process              | `cmd`(default) - process command line, `path` - path to binary, `name` - binary name                    |
+| g          | graphs    | Select which graphs to show          | `all`(default), `mem`, `cpu` |
 
 ## Short Demo
 
@@ -141,6 +142,7 @@ value.
 | Key                          | Description                                                                                                                                    |
 | ---                          | ---                                                                                                                                            |
 | F1                           | Show/hide the short hotkey "tooltip" at the top of the window                                                                                  |
+| F6                           | Select the displayed graphs, cycles through `all`, `mem`, and `cpu`                                                                            |
 | F7                           | Change graphs quality, cycles through `high`, `medium`, and `low`                                                                              |
 | F9                           | Switch process title: `full command line`(default) - the end of it if it is longer than the screen width, `full path to binary`, `binary name` |
 | F12                          | Switch memory scaling mode: `from min to max`(default), `from 0 to max`                                                                        |
