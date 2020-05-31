@@ -10,7 +10,7 @@ use regex::Regex;
 use sysinfo::{ProcessExt, ProcessorExt, System, SystemExt};
 use unicode_width::UnicodeWidthStr;
 
-use log::*;
+// use log::*;
 
 pub(crate) struct Layout {
     pub(crate) w: u16,

@@ -107,6 +107,15 @@ impl Config {
         };
     }
 
+    pub(crate) fn switch_graphs(&mut self) {
+        let old = self.graphs;
+        self.graphs = match old {
+            Graph::All => Graph::Mem,
+            Graph::Mem => Graph::Cpu,
+            Graph::Cpu => Graph::All,
+        };
+    }
+
     pub(crate) fn min_graph_height(&self) -> u16 {
         if self.graph_pos == GraphPosition::Top && self.graphs == Graph::All {
             // 2 graphs with +/-, title, IO

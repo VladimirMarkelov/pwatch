@@ -9,7 +9,7 @@ use crossterm::{cursor, queue, style, style::Color, Result};
 use sysinfo::Pid;
 use unicode_width::UnicodeWidthStr;
 
-use crate::config::{Config, Detail, TitleMode, Graph};
+use crate::config::{Config, Detail, Graph, TitleMode};
 use crate::ux::{fade_str_left, format_bytes, format_diff, format_duration, format_mem, round_to_hundred, short_round};
 
 // set of charcters for different graph detalizations
@@ -337,7 +337,7 @@ impl Process {
         if graphs != Graph::All {
             self.cpu.display_cnt = w as usize;
             self.mem.display_cnt = w as usize;
-            return
+            return;
         }
 
         let cp_w = if self.sided { (w / 2) - 6 } else { w - 6 };
@@ -347,6 +347,7 @@ impl Process {
     }
     pub(crate) fn add(&mut self, cpu: u64, mem: u64) {
         if self.cpu.values.is_empty() {
+            // The first CPU value is really CPU usage in milliseconds, not %, so skip it
             self.cpu.add(0);
         } else {
             self.cpu.add(cpu);
@@ -588,16 +589,16 @@ where
 
     draw_title(w, &proc, cnt, mode)?;
 
-    let (cpu_w, mem_w) = if proc.sided {
-        let cw = (proc.w - 2) / 2 - 4;
-        let mw = proc.w - cw;
-        (cw, mw)
-    } else {
-        (proc.w, proc.w)
+    let mut cpu_w = proc.w;
+    let mut mem_w = proc.w;
+    let mut dx = 0;
+    if proc.sided && conf.graphs == Graph::All {
+        cpu_w = (proc.w - 2) / 2 - 4;
+        mem_w = proc.w - cpu_w;
+        dx = cpu_w;
     };
 
-    let dx = if proc.sided { cpu_w } else { 0 };
-    let (hc, hm, dym, yshift) = if proc.sided {
+    let (hc, hm, dym, yshift) = if proc.sided || conf.graphs != Graph::All {
         (proc.h, proc.h, 0, 2)
     } else {
         let hh = proc.h / 2;
@@ -606,32 +607,38 @@ where
 
     proc.mem.calculate_range();
 
-    let head_cpu_rect = DrawRect { y: proc.y + 2, h: hc - 3, ..Default::default() };
-    let head_cpu_val = DrawVal { curr: proc.cpu.last(), max: proc.cpu.max };
-    draw_cpu_head(w, head_cpu_rect, head_cpu_val, proc.cpu.scale_to)?;
-    let diff = proc.mem.last_diff();
+    if conf.graphs != Graph::Mem {
+        let head_cpu_rect = DrawRect { y: proc.y + 2, h: hc - 3, ..Default::default() };
+        let head_cpu_val = DrawVal { curr: proc.cpu.last(), max: proc.cpu.max };
+        draw_cpu_head(w, head_cpu_rect, head_cpu_val, proc.cpu.scale_to)?;
+    }
 
-    let (max_val, min_val) = if proc.mem.auto_scale {
-        if conf.scale_max {
-            (proc.mem.max, 0)
+    if conf.graphs != Graph::Cpu {
+        let (max_val, min_val) = if proc.mem.auto_scale {
+            if conf.scale_max {
+                (proc.mem.max, 0)
+            } else {
+                (proc.mem.gmax, proc.mem.gmin)
+            }
         } else {
-            (proc.mem.gmax, proc.mem.gmin)
-        }
-    } else {
-        (proc.mem.max, 0)
-    };
+            (proc.mem.max, 0)
+        };
+        let diff = proc.mem.last_diff();
+        let mem_head_rect = DrawRect { x: dx, y: proc.y + dym + yshift, w: 0, h: hm - yshift - 1 };
+        let mem_head_val = DrawVal { curr: proc.mem.last(), max: proc.mem.max };
+        draw_mem_head(w, mem_head_rect, mem_head_val, diff, min_val, max_val)?;
+    }
 
-    let mem_head_rect = DrawRect { x: dx, y: proc.y + dym + yshift, w: 0, h: hm - yshift - 1 };
-    let mem_head_val = DrawVal { curr: proc.mem.last(), max: proc.mem.max };
-    draw_mem_head(w, mem_head_rect, mem_head_val, diff, min_val, max_val)?;
-
-    proc.cpu.update(cpu_w - 5, hc - 3, conf);
-    proc.mem.update(mem_w - 6, hm - yshift - 1, conf);
-
-    let cpu_rect = DrawRect { x: 5, y: proc.y + 2, w: cpu_w - 5, h: hc - 3 };
-    draw_spikes(w, &proc.cpu, cpu_rect, 5, proc.dead_since)?;
-    let mem_rect = DrawRect { x: dx + 6, y: proc.y + dym + yshift, w: mem_w - 6, h: hm - yshift - 1 };
-    draw_spikes(w, &proc.mem, mem_rect, 6, None)?;
+    if conf.graphs != Graph::Mem {
+        proc.cpu.update(cpu_w - 5, hc - 3, conf);
+        let cpu_rect = DrawRect { x: 5, y: proc.y + 2, w: cpu_w - 5, h: hc - 3 };
+        draw_spikes(w, &proc.cpu, cpu_rect, 5, proc.dead_since)?;
+    }
+    if conf.graphs != Graph::Cpu {
+        proc.mem.update(mem_w - 6, hm - yshift - 1, conf);
+        let mem_rect = DrawRect { x: dx + 6, y: proc.y + dym + yshift, w: mem_w - 6, h: hm - yshift - 1 };
+        draw_spikes(w, &proc.mem, mem_rect, 6, None)?;
+    }
 
     Ok(())
 }
