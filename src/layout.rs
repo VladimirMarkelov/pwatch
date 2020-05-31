@@ -10,6 +10,8 @@ use regex::Regex;
 use sysinfo::{ProcessExt, ProcessorExt, System, SystemExt};
 use unicode_width::UnicodeWidthStr;
 
+use log::*;
+
 pub(crate) struct Layout {
     pub(crate) w: u16,
     pub(crate) h: u16,
@@ -22,8 +24,6 @@ pub(crate) struct Layout {
     pub(crate) mark_since: Option<SystemTime>,
     show_help: bool, // show help bar(true) or total CPU/MEM(false) in the top line
 }
-
-pub(crate) const MIN_HEIGHT: u16 = 5; // minimum height of a graph
 
 pub(crate) enum Scroll {
     Home,
@@ -57,40 +57,6 @@ impl Layout {
         self.w = w;
         self.h = h;
         self.place();
-    }
-
-    // Returns the number of maximum displayed process on the screen, height of every process, and
-    // how to place mem and cpu counters: side-by-side or one-on-top-of-another
-    fn max_shown(&self) -> (usize, u16, Pack) {
-        let procs = self.procs.len();
-        let h_side = MIN_HEIGHT + 3; // title*2+graph+extra
-        let h_line = MIN_HEIGHT * 2 + 4; // title*2+2*graph+2*extra
-
-        let h = self.h - 1; // total CPU%/MEM%, alive/hidden/dead
-
-        let max_n_l = h / h_line;
-        let max_n_s = h / h_side;
-        let (cnt, mut hgt, tp) = match self.config.pack {
-            Pack::Line => (max_n_l as usize, h_line, Pack::Line),
-            Pack::Side => (max_n_s as usize, h_side, Pack::Side),
-            Pack::Auto => {
-                if max_n_l >= procs as u16 {
-                    (max_n_l as usize, h_line, Pack::Line)
-                } else {
-                    (max_n_s as usize, h_side, Pack::Side)
-                }
-            }
-        };
-
-        if procs != 0 {
-            let shown = if procs < cnt { procs } else { cnt };
-            let used = shown as u16 * hgt;
-            if h - used > procs as u16 {
-                hgt += (h - used) / procs as u16;
-            }
-        }
-
-        (cnt, hgt, tp)
     }
 
     // Refresh process list, update CPU/MEM, mark dead ones, and add new ones
@@ -174,7 +140,10 @@ impl Layout {
             return;
         }
         let l = self.procs.len();
-        let (mx, h, pack) = self.max_shown();
+        let draw_height = self.h - 1;
+        let mx = self.config.visible_count(l, draw_height);
+        let h = self.config.graph_height(l, draw_height);
+        let pack = self.config.packer(l, draw_height);
         for idx in 0..l {
             if idx < self.top_item || idx >= self.top_item + mx {
                 self.procs[idx].dim(0, 0, 0, 0, false); // out of screen

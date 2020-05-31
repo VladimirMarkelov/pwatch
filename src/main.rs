@@ -3,13 +3,13 @@ mod counter;
 mod layout;
 mod ux;
 
-// use std::fs::File;
+use std::fs::File;
 use std::io::{stdout, Write};
 use std::process::exit;
 use std::time::{Duration, Instant};
 
 use atty::Stream;
-// use simplelog::*;
+use simplelog::*;
 
 use crossterm::event::{poll, read, Event, KeyCode};
 use crossterm::terminal::{self, disable_raw_mode, enable_raw_mode, ClearType};
@@ -109,8 +109,8 @@ fn main() -> Result<()> {
         eprintln!("Only TTY is supported");
         exit(2);
     }
-    // let cb = ConfigBuilder::new().set_time_format("[%Y-%m-%d %H:%M:%S%.3f]".to_string()).build();
-    // CombinedLogger::init(vec![WriteLogger::new(LevelFilter::Info, cb, File::create("app.log").unwrap())]).unwrap();
+    let cb = ConfigBuilder::new().set_time_format("[%Y-%m-%d %H:%M:%S%.3f]".to_string()).build();
+    CombinedLogger::init(vec![WriteLogger::new(LevelFilter::Info, cb, File::create("app.log").unwrap())]).unwrap();
     let config = config::parse_args();
     println!();
     enable_raw_mode()?;

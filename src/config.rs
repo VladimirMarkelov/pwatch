@@ -4,6 +4,8 @@ use std::process::exit;
 use getopts::{Matches, Options};
 use sysinfo::Pid;
 
+const GRAPH_AREA: u16 = 5;
+
 // How CPU and memory graphs of the same process are displayed
 #[derive(Clone, PartialEq)]
 pub(crate) enum Pack {
@@ -28,6 +30,22 @@ pub(crate) enum TitleMode {
     Title, // binary name
 }
 
+// Which resource graphs to show
+#[derive(Copy, Clone, PartialEq)]
+pub(crate) enum Graph {
+    Both,
+    MEM,
+    CPU,
+}
+
+// How to show CPU and MEM graphs
+#[derive(Copy, Clone, PartialEq)]
+pub(crate) enum GraphPosition {
+    Auto,  // Automatic selection
+    Sided, // Always side by side
+    Top,   // One on top of another
+}
+
 #[derive(Clone)]
 pub(crate) struct Config {
     pub(crate) pack: Pack,            // How to show CPU and MEM of the same process
@@ -39,6 +57,8 @@ pub(crate) struct Config {
     pub(crate) scale_max: bool, // How to scale MEM graph: true - from 0 ro all-time max, false - from displayed min to max
     pub(crate) freq: u64,       // process stats refresh rate in range 0.25s .. 10s
     pub(crate) title_mode: TitleMode, // what use for a process title when displaying it
+    pub(crate) graphs: Graph,
+    pub(crate) graph_pos: GraphPosition,
 }
 
 impl Default for Config {
@@ -53,6 +73,8 @@ impl Default for Config {
             scale_max: false,
             freq: 1_000,
             title_mode: TitleMode::Cmd,
+            graphs: Graph::Both,
+            graph_pos: GraphPosition::Auto,
         }
     }
 }
@@ -83,6 +105,64 @@ impl Config {
             Detail::Medium => Detail::Low,
             Detail::Low => Detail::High,
         };
+    }
+
+    pub(crate) fn min_graph_height(&self) -> u16 {
+        if self.graph_pos == GraphPosition::Top && self.graphs == Graph::Both {
+            // 2 graphs with +/-, title, IO
+            GRAPH_AREA * 2 + 2 + 2
+        } else {
+            // Graph with +/-, title, IO
+            GRAPH_AREA + 1 + 1 + 1
+        }
+    }
+
+    pub(crate) fn max_graph_height(&self) -> u16 {
+        if self.graph_pos == GraphPosition::Sided || self.graphs != Graph::Both {
+            // Graph with +/-, title, IO
+            GRAPH_AREA + 1 + 1 + 1
+        } else {
+            // 2 graphs with +/-, title, IO
+            GRAPH_AREA * 2 + 2 + 2
+        }
+    }
+
+    pub(crate) fn packer(&self, proc_count: usize, height: u16) -> Pack {
+        match self.graph_pos {
+            GraphPosition::Sided => Pack::Side,
+            GraphPosition::Top => Pack::Line,
+            GraphPosition::Auto => {
+                let max = self.max_graph_height();
+                if max as usize * proc_count <= height as usize {
+                    Pack::Line
+                } else {
+                    Pack::Side
+                }
+            }
+        }
+    }
+    pub(crate) fn graph_height(&self, proc_count: usize, height: u16) -> u16 {
+        let mut h = if self.packer(proc_count, height) == Pack::Line {
+            self.max_graph_height()
+        } else {
+            self.min_graph_height()
+        };
+        let ph = h as usize * proc_count;
+        if ph < height as usize {
+            let diff = height as usize - ph;
+            h += (diff / proc_count) as u16;
+        }
+        h
+    }
+
+    pub(crate) fn visible_count(&self, proc_count: usize, height: u16) -> usize {
+        let h = self.graph_height(proc_count, height);
+        let vis = (height / h) as usize;
+        if vis < proc_count {
+            vis
+        } else {
+            proc_count
+        }
     }
 }
 
