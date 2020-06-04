@@ -156,6 +156,9 @@ impl Config {
         } else {
             self.min_graph_height()
         };
+        if proc_count == 0 {
+            return h;
+        }
         let ph = h as usize * proc_count;
         if ph < height as usize {
             let diff = height as usize - ph;

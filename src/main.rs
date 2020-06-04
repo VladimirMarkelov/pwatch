@@ -13,7 +13,7 @@ use atty::Stream;
 
 use crossterm::event::{poll, read, Event, KeyCode};
 use crossterm::terminal::{self, disable_raw_mode, enable_raw_mode, ClearType};
-use crossterm::{queue, style, Result};
+use crossterm::{queue, style, style::Color, Result};
 
 fn process_events(lay: &mut layout::Layout) -> Result<()> {
     let mut tm = Instant::now();
@@ -130,7 +130,12 @@ fn main() -> Result<()> {
     }
     {
         let mut stdout = stdout();
-        queue!(stdout, style::ResetColor, terminal::Clear(ClearType::All))?;
+        queue!(
+            stdout,
+            style::SetBackgroundColor(Color::Black),
+            style::SetForegroundColor(Color::White),
+            terminal::Clear(ClearType::All)
+        )?;
         stdout.flush()?;
     }
     let mut lay = layout::Layout::new(config);
