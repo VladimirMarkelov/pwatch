@@ -260,6 +260,14 @@ impl Layout {
     pub(crate) fn switch_help(&mut self) {
         self.show_help = !self.show_help;
     }
+
+    pub(crate) fn remove_dead(&mut self) -> bool {
+        if self.procs.iter().all(|x| !x.dead) {
+            return false;
+        }
+        self.procs.retain(|x| !x.dead);
+        true
+    }
 }
 
 fn update_proc<P>(procs: &mut Vec<Process>, p: &P)
@@ -307,7 +315,7 @@ where
 {
     // Keep the least useful keys at the end as they can be removed when squeezing the string to
     // screen width
-    let help_str = "SPACE: Mark | F6: Graph | F7: Quality | F9: Title | F12: Scale | r: Reset max";
+    let help_str = "SPACE Mark | F6 Graph | F7 Quality | F8 Clean | F9 Title | F12 Scale | r Reset max";
     let mut s = cut_string(help_str, layout.w as usize);
     let width = s.width();
     if width < layout.w as usize {

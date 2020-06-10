@@ -59,6 +59,9 @@ fn process_events(lay: &mut layout::Layout) -> Result<()> {
                         lay.config.switch_quality();
                         force_redraw = true;
                     }
+                    KeyCode::F(8) => {
+                        force_redraw = lay.remove_dead();
+                    }
                     KeyCode::F(9) => {
                         lay.config.switch_title_type();
                         force_redraw = true;
