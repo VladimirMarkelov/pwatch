@@ -38,7 +38,7 @@ only binary name, that allows to watch a set of differently-named processes star
 | Short name | Long name | Description                          | Values                                                                                                  |
 | ---        | ---       | ---                                  | ---                                                                                                     |
 | v          | version   | Show application version             |                                                                                                         |
-| q          | quality   | Set [graph quality](graph-quality)   | One of `high`, `medium` or `low`                                                                        |
+| q          | quality   | Set [graph quality](#graph-quality)  | One of `high`, `medium` or `low`                                                                        |
 | r          | refresh   | Set refresh interval in milliseconds | Default value is `1000`, only numbers within range `250`..`10000` can be used                           |
 | s          | scale     | Select memory graph scaling mode     | `zero` - the graph display range is from `0` to `maximum`; `min`(default) - from `minimum` to `maximum` |
 | t          | title     | Set title for a process              | `cmd`(default) - process command line, `path` - path to binary, `name` - binary name                    |
@@ -80,7 +80,7 @@ CPU and MEM graphs have the same header. The MEM one is used to describe what th
           ++    --
 ```
 
-Note: the graph in the example is drawn in the best quality mode. See more about [quality modes here](#graph-quality)
+Note: the graph in the example is drawn in the best quality mode. See more about [quality modes here](#graph-quality).
 
 Top and bottom values are the graph display range. The values are always exact, so it this example, the top of the
 graph is exactly `226 MiB` and the bottom line is `225 MiB`. Please note that for CPU the bottom values is missing.
@@ -139,23 +139,27 @@ value.
 
 ## Hot Keys
 
-| Key                          | Description                                                                                                                                    |
-| ---                          | ---                                                                                                                                            |
-| F1                           | Show/hide the short hotkey "tooltip" at the top of the window                                                                                  |
-| F6                           | Select the displayed graphs, cycles through `all`, `mem`, and `cpu`                                                                            |
-| F7                           | Change graphs quality, cycles through `high`, `medium`, and `low`                                                                              |
-| F9                           | Switch process title: `full command line`(default) - the end of it if it is longer than the screen width, `full path to binary`, `binary name` |
-| F12                          | Switch memory scaling mode: `from min to max`(default), `from 0 to max`                                                                        |
-| r                            | Reset all-time maximum: set the maximum to the maximum in visible interval                                                                     |
-| SPACE                        | Set/Unset the point in time from which the usage difference is calculated                                                                      |
-| q                            | Exit                                                                                                                                           |
-| ESC                          | Exit                                                                                                                                           |
-| Arrows, PageUp, and PageDown | Scroll the list of processes if some of them are out of screen                                                                                 |
-| Home                         | Scroll to the first process in the list                                                                                                        |
-| End                          | Scroll so the last process in the list is visible                                                                                              |
+| Key                          | Description                                                                |
+| ---                          | ---                                                                        |
+| F1                           | Show/hide the short hotkey "tooltip" at the top of the window              |
+| F6                           | Select the displayed graphs, cycles through `all`, `mem`, and `cpu`        |
+| F7                           | Change graphs quality, cycles through `high`, `medium`, and `low`          |
+| F8                           | Removes all dead processes from the screen                                 |
+| F9                           | Switch process title: `command line`(default), `path to binary`, `binary name`  |
+| F12                          | Switch memory scaling mode: `from min to max`(default), `from 0 to max`   |
+| r                            | Reset all-time maximum: set the maximum to the maximum in visible interval|
+| SPACE                        | Set/Unset the point in time from which the usage difference is calculated |
+| q, ESC                       | Exit                                                            |
+| Arrows, PageUp, and PageDown | Scroll the list of processes if some of them are out of screen  |
+| Home                         | Scroll to the first process in the list                         |
+| End                          | Scroll so the last process in the list is visible               |
 
 ## Dead processes
 
 Even when a process exits, `PWatch` does not remove the process graphs. It keeps displaying the last registered values,
 and add a message (it replaces CPU's "+/-" bottom line) how much time ago the process finished. It is very useful to
 check what happens before the process exited or crashed without constant staring at the screen.
+
+## License
+
+Apache-2.0
