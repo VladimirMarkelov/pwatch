@@ -12,6 +12,8 @@
 - [Measuring Difference](#measuring-difference)
 - [Hot Keys](#hot-keys)
 - [Dead processes](#dead-processes)
+- [Screenshot](#screenshot)
+- [License](#license)
 
 ## Description
 
@@ -142,6 +144,7 @@ value.
 | Key                          | Description                                                                |
 | ---                          | ---                                                                        |
 | F1                           | Show/hide the short hotkey "tooltip" at the top of the window              |
+| F2                           | Take a screenshot |
 | F6                           | Select the displayed graphs, cycles through `all`, `mem`, and `cpu`        |
 | F7                           | Change graphs quality, cycles through `high`, `medium`, and `low`          |
 | F8                           | Removes all dead processes from the screen                                 |
@@ -159,6 +162,13 @@ value.
 Even when a process exits, `PWatch` does not remove the process graphs. It keeps displaying the last registered values,
 and add a message (it replaces CPU's "+/-" bottom line) how much time ago the process finished. It is very useful to
 check what happens before the process exited or crashed without constant staring at the screen.
+
+## Screenshot
+
+Hotkey `F2` saves the screen to a file in the current working directory.
+The name of the file starts with `shot-` followed by the current time in format `YearMonthDay-HourMiniuteSecond`.
+The file extension is `.txt`.
+If a file with the same name exists(e.g., the hotkey was pressed a few times a second), it is overwritten.
 
 ## License
 

@@ -316,7 +316,7 @@ where
 {
     // Keep the least useful keys at the end as they can be removed when squeezing the string to
     // screen width
-    let help_str = "SPACE Mark | F6 Graph | F7 Quality | F8 Clean | F9 Title | F12 Scale | r Reset max";
+    let help_str = "SPACE Mark | F2 Shot | F6 Graph | F7 Quality | F8 Clean | F9 Title | F12 Scale | r Reset max";
     let mut s = cut_string(help_str, layout.w as usize);
     let width = s.width();
     if width < layout.w as usize {
