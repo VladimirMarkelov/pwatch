@@ -191,7 +191,6 @@ impl Layout {
             }
             draw_counter(w, proc, idx + 1, self.config.title_mode, &self.config)?;
         }
-        w.flush()?;
         Ok(())
     }
 

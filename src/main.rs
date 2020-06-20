@@ -1,10 +1,11 @@
 mod config;
 mod counter;
 mod layout;
+mod shot;
 mod ux;
 
-use simplelog::*;
-use std::fs::File;
+// use simplelog::*;
+// use std::fs::File;
 
 use std::io::{stdout, Write};
 use std::process::exit;
@@ -33,6 +34,7 @@ fn process_events(lay: &mut layout::Layout) -> Result<()> {
     loop {
         let (tot, hid, _dead) = lay.proc_totals();
         let page = tot - hid;
+        let mut do_shot = false;
         if poll(Duration::from_millis(lay.config.freq))? {
             match read()? {
                 Event::Key(ev) => match ev.code {
@@ -53,6 +55,10 @@ fn process_events(lay: &mut layout::Layout) -> Result<()> {
                     }
                     KeyCode::F(1) => {
                         lay.switch_help();
+                        force_redraw = true;
+                    }
+                    KeyCode::F(2) => {
+                        do_shot = true;
                         force_redraw = true;
                     }
                     KeyCode::F(6) => {
@@ -99,16 +105,23 @@ fn process_events(lay: &mut layout::Layout) -> Result<()> {
         }
         lay.place();
 
-        let mut stdout = stdout();
-        let new_h = lay.counter_height();
-        if resized || (new_h != 0 && new_h != prev_h) {
-            prev_h = new_h;
-            resized = false;
-            queue!(stdout, style::ResetColor, terminal::Clear(ClearType::All))?;
+        if do_shot {
+            let mut stdout = shot::ScreenShot::new(lay.w, lay.h);
+            lay.draw_counters(&mut stdout)?;
             stdout.flush()?;
-        }
+        } else {
+            let new_h = lay.counter_height();
+            let h_changed = resized || (new_h != 0 && new_h != prev_h);
+            let mut stdout = stdout();
+            if h_changed {
+                prev_h = new_h;
+                queue!(stdout, style::ResetColor, terminal::Clear(ClearType::All))?;
+            }
 
-        lay.draw_counters(&mut stdout)?;
+            lay.draw_counters(&mut stdout)?;
+            stdout.flush()?;
+            resized = false;
+        }
         if must_update {
             tm = Instant::now();
         }
@@ -120,8 +133,8 @@ fn main() -> Result<()> {
         eprintln!("Only TTY is supported");
         exit(2);
     }
-    let cb = ConfigBuilder::new().set_time_format("[%Y-%m-%d %H:%M:%S%.3f]".to_string()).build();
-    CombinedLogger::init(vec![WriteLogger::new(LevelFilter::Info, cb, File::create("app.log").unwrap())]).unwrap();
+    // let cb = ConfigBuilder::new().set_time_format("[%Y-%m-%d %H:%M:%S%.3f]".to_string()).build();
+    // CombinedLogger::init(vec![WriteLogger::new(LevelFilter::Info, cb, File::create("app.log").unwrap())]).unwrap();
     let config = config::parse_args();
     println!();
     enable_raw_mode()?;
