@@ -1,4 +1,4 @@
-use std::io::{stdout, Write};
+use std::io::Write;
 use std::time::SystemTime;
 
 use crate::config::{Config, Pack};
@@ -173,12 +173,14 @@ impl Layout {
         (total, hidden, dead)
     }
 
-    pub(crate) fn draw_counters(&mut self) -> Result<()> {
-        let mut stdout = stdout();
+    pub(crate) fn draw_counters<W>(&mut self, w: &mut W) -> Result<()>
+    where
+        W: Write,
+    {
         if self.show_help {
-            draw_help(&mut stdout, self)?;
+            draw_help(w, self)?;
         } else {
-            draw_totals(&mut stdout, self)?;
+            draw_totals(w, self)?;
         }
         for (idx, proc) in self.procs.iter_mut().enumerate() {
             if idx < self.top_item {
@@ -187,9 +189,9 @@ impl Layout {
             if proc.w == 0 {
                 break;
             }
-            draw_counter(&mut stdout, proc, idx + 1, self.config.title_mode, &self.config)?;
+            draw_counter(w, proc, idx + 1, self.config.title_mode, &self.config)?;
         }
-        stdout.flush()?;
+        w.flush()?;
         Ok(())
     }
 

@@ -3,13 +3,14 @@ mod counter;
 mod layout;
 mod ux;
 
-// use std::fs::File;
+use simplelog::*;
+use std::fs::File;
+
 use std::io::{stdout, Write};
 use std::process::exit;
 use std::time::{Duration, Instant};
 
 use atty::Stream;
-// use simplelog::*;
 
 use crossterm::event::{poll, read, Event, KeyCode};
 use crossterm::terminal::{self, disable_raw_mode, enable_raw_mode, ClearType};
@@ -23,7 +24,10 @@ fn process_events(lay: &mut layout::Layout) -> Result<()> {
     // draw immediately empty graphs
     lay.update();
     lay.place();
-    lay.draw_counters()?;
+    {
+        let mut stdout = stdout();
+        lay.draw_counters(&mut stdout)?;
+    }
     let mut prev_h = lay.counter_height();
 
     loop {
@@ -95,16 +99,16 @@ fn process_events(lay: &mut layout::Layout) -> Result<()> {
         }
         lay.place();
 
+        let mut stdout = stdout();
         let new_h = lay.counter_height();
         if resized || (new_h != 0 && new_h != prev_h) {
             prev_h = new_h;
             resized = false;
-            let mut stdout = stdout();
             queue!(stdout, style::ResetColor, terminal::Clear(ClearType::All))?;
             stdout.flush()?;
         }
 
-        lay.draw_counters()?;
+        lay.draw_counters(&mut stdout)?;
         if must_update {
             tm = Instant::now();
         }
@@ -116,8 +120,8 @@ fn main() -> Result<()> {
         eprintln!("Only TTY is supported");
         exit(2);
     }
-    // let cb = ConfigBuilder::new().set_time_format("[%Y-%m-%d %H:%M:%S%.3f]".to_string()).build();
-    // CombinedLogger::init(vec![WriteLogger::new(LevelFilter::Info, cb, File::create("app.log").unwrap())]).unwrap();
+    let cb = ConfigBuilder::new().set_time_format("[%Y-%m-%d %H:%M:%S%.3f]".to_string()).build();
+    CombinedLogger::init(vec![WriteLogger::new(LevelFilter::Info, cb, File::create("app.log").unwrap())]).unwrap();
     let config = config::parse_args();
     println!();
     enable_raw_mode()?;
