@@ -18,17 +18,14 @@ const MED: [char; 3] = [' ', '\u{2584}', '\u{2588}'];
 const HGH: [char; 9] =
     [' ', '\u{2581}', '\u{2582}', '\u{2583}', '\u{2584}', '\u{2585}', '\u{2586}', '\u{2587}', '\u{2588}'];
 
+#[derive(Default)]
 struct DrawRect {
     x: u16,
     y: u16,
     w: u16,
     h: u16,
 }
-impl Default for DrawRect {
-    fn default() -> DrawRect {
-        DrawRect { x: 0, y: 0, w: 0, h: 0 }
-    }
-}
+
 struct DrawVal {
     curr: u64,
     max: u64,
@@ -587,7 +584,7 @@ where
         return Ok(());
     }
 
-    draw_title(w, &proc, cnt, mode)?;
+    draw_title(w, proc, cnt, mode)?;
 
     let mut cpu_w = proc.w;
     let mut mem_w = proc.w;
