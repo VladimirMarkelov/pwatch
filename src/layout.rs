@@ -7,7 +7,7 @@ use crate::ux::{cut_string, format_duration};
 
 use crossterm::{cursor, queue, style, style::Color, terminal, Result};
 use regex::Regex;
-use sysinfo::{ProcessExt, ProcessorExt, System, SystemExt};
+use sysinfo::{CpuExt, ProcessExt, System, SystemExt};
 use unicode_width::UnicodeWidthStr;
 
 // use log::*;
@@ -61,7 +61,7 @@ impl Layout {
 
     // Refresh process list, update CPU/MEM, mark dead ones, and add new ones
     fn update_procs(&mut self) {
-        let procs = self.system.get_processes();
+        let procs = self.system.processes();
         for ap in self.procs.iter_mut() {
             if ap.dead {
                 continue;
@@ -116,13 +116,13 @@ impl Layout {
     fn update_total(&mut self) {
         let mut total = 0.0f32;
         let mut used = 0.0f32;
-        for pr in self.system.get_processors().iter() {
+        for pr in self.system.cpus().iter() {
             total += 100.0;
-            used += pr.get_cpu_usage();
+            used += pr.cpu_usage();
         }
         total = used / total;
         self.cpu_usage = total.round() as u64;
-        self.mem_usage = self.system.get_used_memory() * 100 / self.system.get_total_memory();
+        self.mem_usage = self.system.used_memory() * 100 / self.system.total_memory();
     }
 
     pub(crate) fn update(&mut self) {

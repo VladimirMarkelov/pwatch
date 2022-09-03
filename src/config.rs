@@ -7,9 +7,9 @@ use sysinfo::Pid;
 const GRAPH_AREA: u16 = 5;
 
 // How CPU and memory graphs of the same process are displayed
-#[derive(Clone, PartialEq)]
+#[derive(PartialEq)]
 pub(crate) enum Pack {
-    Auto, // depends on the number of processes
+    // TODO: Auto, // depends on the number of processes
     Line, // CPU and MEM graphs occupy the whole terminal width
     Side, // CPU goes first and takes half of the screen, MEM follows it and takes the rest
 }
@@ -46,14 +46,13 @@ pub(crate) enum GraphPosition {
     Top,   // One on top of another
 }
 
-#[derive(Clone)]
 pub(crate) struct Config {
-    pub(crate) pack: Pack,            // How to show CPU and MEM of the same process
-    pub(crate) no_cpu: bool,          // do not show CPU (unused yet)
-    pub(crate) no_mem: bool,          // do not show MEM (unused yet)
-    pub(crate) pid_list: Vec<Pid>,    // list of process PIDs provided by a user in command-line
-    pub(crate) filter: String,        // regular expression to filter process by their name/path to binary
-    pub(crate) detail: Detail,        // Graph details (set of characters used to display graphs)
+    // TODO: pub(crate) pack: Pack,            // How to show CPU and MEM of the same process
+    // TODO: pub(crate) no_cpu: bool,          // do not show CPU (unused yet)
+    // TODO: pub(crate) no_mem: bool,          // do not show MEM (unused yet)
+    pub(crate) pid_list: Vec<Pid>, // list of process PIDs provided by a user in command-line
+    pub(crate) filter: String,     // regular expression to filter process by their name/path to binary
+    pub(crate) detail: Detail,     // Graph details (set of characters used to display graphs)
     pub(crate) scale_max: bool, // How to scale MEM graph: true - from 0 ro all-time max, false - from displayed min to max
     pub(crate) freq: u64,       // process stats refresh rate in range 0.25s .. 10s
     pub(crate) title_mode: TitleMode, // what use for a process title when displaying it
@@ -64,9 +63,9 @@ pub(crate) struct Config {
 impl Default for Config {
     fn default() -> Config {
         Config {
-            pack: Pack::Auto,
-            no_cpu: false,
-            no_mem: false,
+            // TODO: pack: Pack::Auto,
+            // TODO: no_cpu: false,
+            // TODO: no_mem: false,
             pid_list: Vec::new(),
             detail: Detail::High,
             filter: String::new(),
@@ -283,7 +282,7 @@ pub(crate) fn parse_args() -> Config {
     if is_pid {
         for pd in names.split(',') {
             if let Ok(i) = pd.parse::<usize>() {
-                conf.pid_list.push(i as Pid);
+                conf.pid_list.push(Pid::from(i));
             }
         }
     } else {
