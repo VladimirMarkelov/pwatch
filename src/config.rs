@@ -2,7 +2,7 @@ use std::env;
 use std::process::exit;
 
 use getopts::{Matches, Options};
-use sysinfo::Pid;
+use sysinfo::{Pid, PidExt};
 
 const GRAPH_AREA: u16 = 5;
 
@@ -281,8 +281,8 @@ pub(crate) fn parse_args() -> Config {
     let is_pid = names.chars().all(|c| c.is_numeric() || c == ',');
     if is_pid {
         for pd in names.split(',') {
-            if let Ok(i) = pd.parse::<usize>() {
-                conf.pid_list.push(Pid::from(i));
+            if let Ok(i) = pd.parse::<u32>() {
+                conf.pid_list.push(Pid::from_u32(i));
             }
         }
     } else {
