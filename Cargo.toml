@@ -1,6 +1,6 @@
 [package]
 name = "pwatch"
-version = "0.4.0"
+version = "0.5.0"
 authors = ["Vladimir Markelov <vmatroskin@gmail.com>"]
 edition = "2018"
 license = "Apache-2.0"
@@ -9,6 +9,9 @@ readme = "README.md"
 categories = ["command-line-utilities"]
 keywords = ["terminal", "cli", "process", "top", "watch"]
 repository = "https://github.com/VladimirMarkelov/pwatch"
+
+[profile.release]
+strip = "debuginfo"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

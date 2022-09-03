@@ -55,11 +55,8 @@ impl Write for ScreenShot {
                 self.esc_seq += &st;
             }
         } else {
-            let ustr = match str::from_utf8(buf) {
-                Ok(ss) => ss,
-                Err(_) => "",
-            };
-            for c in ustr.chars().into_iter() {
+            let ustr = str::from_utf8(buf).unwrap_or("");
+            for c in ustr.chars() {
                 let p: usize = self.y as usize * self.w as usize + self.x as usize;
                 if p < self.w as usize * self.h as usize {
                     self.screen[p] = c;
